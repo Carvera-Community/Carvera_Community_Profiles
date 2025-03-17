@@ -10,7 +10,7 @@
   FORKID {D897E9AA-349A-4011-AA01-06B6CCC181EB}
 */
 
-description = "Makera Carvera Community Post v1.1.17";
+description = "Makera Carvera Fae";
 vendor = "Makera";
 vendorUrl = "https://www.makera.com";
 legal = "Copyright (C) 2012-2022 by Autodesk, Inc.";
@@ -20,26 +20,12 @@ minimumRevision = 45702;
 extension = "cnc";
 setCodePage("ascii");
 
-capabilities = CAPABILITY_MILLING | CAPABILITY_JET | CAPABILITY_MACHINE_SIMULATION;
+capabilities = CAPABILITY_MILLING | CAPABILITY_JET | CAPABILITY_MACHINE_SIMULATION | TOOL_PROBE;
 tolerance = spatial(0.002, MM);
 
 ///////////////////////////////////////////////////////////////////////////////
 //                        MANUAL NC COMMANDS
-// The following manual NC commands are supported by this post:
-//      Dwell                  -pause for x seconds
-//      Stop                   -pause and wait for input from tne user
-//      Comment                -write a comment into the file
-//      Measure Tool           -run a tool length offset calibration on the current tool     
-//      Tool Break Control     -run a tool break test. Requires the community firmware
-//      Pass Through           -send the contents of the input box directly to the machine 
-
-
-// Useful Pass Through Commands
-//      M98.1 "nameOfFile"
-//      M98 P2002
-//      
-
-
+//
 // The following ACTION commands are supported by this post.
 //      
 //     RapidA:#             -rapids the a axis to degree position
@@ -72,7 +58,7 @@ maximumCircularSweep = toRad(180);
 
 allowHelicalMoves = true;
 allowedCircularPlanes = undefined; // allow any circular motion
-highFeedrate = (unit == MM) ? 3000 : 140;
+probeMultipleFeatures = true;
 
 // user-defined properties
 properties = {
@@ -150,38 +136,30 @@ properties = {
     value: "none",
     scope: "post"
   },
-  splitFileHeader: {
-    title      : "Write Tool# and Header To Each Split By Toolpath File",
-    description: "Write Tool# and Header To Each Split By Toolpath File",
-    group      : "preferences",
-    type       : "boolean",
-    value: true,
-    scope: "post"
-  },
-    manualToolChangeBehavior: {
-    title      : "Manual Tool Change Behavior",
-    description: "If you are using the Carvera Air, choose the Carvera Air option. If you are using the carvera community firmware, that option will allow you to use tools 0-99. If you are using the stock carvera firmware on the non air variant, choose the fusion manual tool changes to generate tool changes when a tool number is greater than 6, the shank size changes, or the tool is marked for manual tool change. If you want the default behavior for the Carvera where it alarms on any tool number greater than 6, choose the first option",
-    group      : "preferences",
-    type       : "enum",
-    values     : [
-      {title:"Error On More Than 6 Tools", id:"error6"},
-      {title:"Fusion Manual Tool Changes", id:"fusionMtc"},
-      {title:"Carvera Community Tool Changes", id:"carvcomMtc"},
-      {title:"Carvera Air Tool Changes", id:"carvAirMtc"}
-    ],
-    value: "carvAirMtc",
-						  
-				  
-    scope: "post"
-  },
   useShankSizeForManualChange: {
     title      : "Write Manual Tool Changes when Shank Size Changes",
+    description: "",
+    group      : "preferences",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  showCycleVariables: {
+    title      : "shows the variables associated with probing and drilling cycles",
     description: "",
     group      : "preferences",
     type       : "boolean",
     value      : true,
     scope      : "post"
   },
+  singleResultsFile: {
+  title : "Create single results file",
+  description: "Set to false if you want to store the measurement results for each probe / inspection toolpath in a separate file",
+  group : 0,
+  type : "boolean",
+  value : true,
+  scope : "post"
+  }
 };
 
 // wcs definiton
@@ -191,6 +169,22 @@ wcsDefinitions = {
     {name:"Standard", format:"G", range:[54, 59]}
   ]
 };
+
+//Probe settings
+var gRotationModal = createModal({
+  onchange: function () {
+  if (probeVariables.probeAngleMethod == "G68") {
+    probeVariables.outputRotationCodes = true;
+    }
+  }
+ }, gFormat); // modal group 16 // G68-G69
+var allowIndexingWCSProbing = false; // specifies probe WCS with tool orientation is supported
+var probeVariables = {
+ outputRotationCodes: false, // defines if it is required to output rotation codes
+ probeAngleMethod : "OFF", // OFF, AXIS_ROT, G68, G54.4
+ compensationXY : undefined
+};
+
 
 var numberOfToolSlots = 9999;
 var previousToolChangeWasManual = false;
@@ -224,6 +218,7 @@ var toolFormat = createFormat({decimals:0});
 var rpmFormat = createFormat({decimals:0});
 var secFormat = createFormat({decimals:3, forceDecimal:true}); // seconds - range 0.001-1000
 var taperFormat = createFormat({decimals:1, scale:DEG});
+var probeWCSFormat = createFormat({prefix:"G", decimals:1, forceDecimal:true}); //format for probing opperations
 
 var xOutput = createVariable({prefix:"X"}, xyzFormat);
 var yOutput = createVariable({prefix:"Y"}, xyzFormat);
@@ -253,6 +248,8 @@ var sequenceNumber;
 var forceSpindleSpeed = false;
 var currentWorkOffset;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
+var g68RotationMode = 0;
+var angularProbingMode;
 
 /**
   Writes the specified block.
@@ -296,9 +293,19 @@ function onPassThrough(text) {
   writeBlock(text);
 }
 
+function printProbeResults() {
+  return currentSection.getParameter("printResults", 0) == 1;
+}
+
+var probeOutputWorkOffset = 1;
+var probeMeasureFeed = 10;
+
 /** Custom Actions -Fae*/
 function onParameter(name, value) {
   var invalid = false;
+  if (name == "operation:tool_feedProbeMeasure") probeMeasureFeed = value; 
+  //This feels very sloppy I would like to know how to use onParameter() as its intended MF
+  if (name == "probe-output-work-offset") probeOutputWorkOffset = (value > 0) ? value : 1;
   if (name == "action") {
     
     if (String(value).toUpperCase() == "SPINDLEOFF"){
@@ -564,8 +571,6 @@ function onOpen() {
         var tool = tools.getTool(i);
         var comment = "T" + toolFormat.format(tool.number) + "  " +
           tool.description + "  " +
-          tool.vendor + "  " +
-          tool.productId + "  " +
           "D=" + xyzFormat.format(tool.diameter) + " " +
           localize("CR") + "=" + xyzFormat.format(tool.cornerRadius);
         if ((tool.taperAngle > 0) && (tool.taperAngle < Math.PI)) {
@@ -606,7 +611,7 @@ function onOpen() {
     writeBlock(gUnitModal.format(21));
     break;
   }
-}
+} // onOpen end
 
 function onComment(message) {
   writeComment(message);
@@ -631,10 +636,286 @@ function forceAny() {
   forceXYZ();
   feedOutput.reset();
 }
-
+/** checks if the current opperation is a specific to probing and the stratagy of that probing sub-opp*/
 function isProbeOperation() {
   return hasParameter("operation-strategy") &&
     (getParameter("operation-strategy") == "probe");
+}
+function approach(value) {
+  validate((value == "positive") || (value == "negative"), "Invalid approach.");
+  return (value == "positive") ? 1 : -1;
+}
+function setProbeAngleMethod() {  
+// Output rotation offset based on angular probing cycle.
+// Determines the output method (G68, G54.4, rotational)
+// for angular probing cycles
+}
+function setProbeAngle() {
+//Outputs the rotational blocks for angular probing cycles.
+// This output may have to be modified to match your control.
+}
+function protectedProbeMove(_cycle, x, y, z) {
+//Positions the probe in a protected mode (P9810).
+}
+function getProbingArguments(cycle, updateWCS) {
+//Formats the standard codes for all probing cycles based
+// on the probing cycle parameters. This function is usually
+// located after the onCyclePoint function and may have to
+// be modified to match your control.
+}
+// function getFeed(f) {
+//   if (activeMovements) {
+//     var feedContext = activeMovements[movement];
+//     if (feedContext != undefined) {
+//       if (!feedFormat.areDifferent(feedContext.feed, f)) {
+//         if (feedContext.id == currentFeedId) {
+//           return ""; // nothing has changed
+//         }
+//         forceFeed();
+//         currentFeedId = feedContext.id;
+//         if (useDatronFeedCommand) {
+//           return ("Feed " + capitalizeFirstLetter(feedContext.datronFeedName));
+//         } else {
+//           return ("Feed=" + formatVariable(feedContext.description));
+//         }
+//       }
+//     }
+//     currentFeedId = undefined; // force Q feed next time
+//   }
+//   if (feedFormat.areDifferent(currentFeedValue, f)) {
+//     currentFeedValue = f;
+//     return "Feed=" + feedFormat.format(f);
+//   }
+//   return "";
+// }
+function getFeed(f) { //TODO may still need some work to access movement object properly
+  if (getProperty("useG95")) {
+    return feedOutput.format(f / spindleSpeed); // use feed value
+  }
+  if (typeof activeMovements != "undefined" && activeMovements) {
+    var feedContext = activeMovements[movement];
+    if (feedContext != undefined) {
+      if (!feedFormat.areDifferent(feedContext.feed, f)) {
+        if (feedContext.id == currentFeedId) {
+          return ""; // nothing has changed
+        }
+        forceFeed();
+        currentFeedId = feedContext.id;
+        return settings.parametricFeeds.feedOutputVariable + (settings.parametricFeeds.firstFeedParameter + feedContext.id);
+      }
+    }
+    currentFeedId = undefined; // force parametric feed next time
+  }
+  return feedOutput.format(f); // use feed value
+}
+
+function onCycle() {
+  writeBlock(gPlaneModal.format(17));
+}
+   
+/** development of probing opperations and introcution of onCycle meathods into this post (copied from datron c5.cps) */
+function onCyclePoint(x, y, z) {
+  if (!isSameDirection(getRotation().forward, new Vector(0, 0, 1))) {
+    // expandCyclePoint(x, y, z);
+    // expandCyclePoint(cycle, x, y, z);
+    return;
+  }
+
+  if (isProbeOperation(currentSection)) { //currentsection would be the probing strategy / sub-opp
+    if (!isSameDirection(currentSection.workPlane.forward, new Vector(0, 0, 1))) {
+      if (!allowIndexingWCSProbing && currentSection.strategy == "probe") {
+        error(localize("Updating WCS / work offset using probing is only supported by the CNC in the WCS frame."));
+        return;
+      }
+    }
+
+/* The WCS Probing operations are considered a "cycle" in the post processor 
+and therefore are output in the onCyclePoint function, with the probe type 
+being stored in the cycleType variable. **/
+//https://cam.autodesk.com/posts/posts/guides/Post%20Processor%20Training%20Guide.pdf page 10-248
+  var pEXP = 0; // EXPERIMENTAL great spot to quick search cycle opject or pick up globals which are scraped from onParameter()
+  var pAngle = cycle.angleAskewAction;
+  var pApproach1 = cycle.approach1; // picks up the first probe direction and produces a 1 or -1
+  var pApproach2 = cycle.approach2; // picks up the second probe direction and produces a 1 or -1
+  var pBottom = cycle.bottom;
+  var pDepth = cycle.depth;
+  var pFeed = cycle.feedrate; //TODO trying to develop a variable for measuring feedrate this is not the actual measuring feedrate yet
+  // probeMeasureFeed - global from onParameter();
+  var pAngleTolerance = cycle.hasAngleTolerance;
+  var pPositionTolerance = cycle.hasPositionalTolerance ;
+  var pSizeTolerance = cycle.hasSizeTolerance;
+  var pIncComponent = cycle.incrementComponent;
+  var pOutOfPos  = cycle.outOfPositionAction ;
+  var pPrintRes = cycle.printResults;
+  var pAproach = cycle.probeClearance;
+  var pOverTravel = cycle.probeOvertravel;
+  var pSpaceing = cycle.probeSpacing;
+  var pRetract = cycle.retract; 
+  var pStock = cycle.stock;
+  var pToleranceAngle = cycle.toleranceAngle;
+  var pTolerancePos = cycle.tolerancePosition;
+  var pToleranceSize = cycle.toleranceSize;
+  var pWidth1 = cycle.width1 ;
+  var pWidth2 = cycle.width2;
+  var pWrongSize = cycle.wrongSizeAction;
+  var pDir1 = approach(cycle.approach1); 
+  var pDir2 = approach(cycle.approach2); 
+  var pSetProbeAngle = setProbeAngle();
+  var pXYDist = pDir1 * (cycle.probeClearance + tool.diameter / 2 + cycle.probeOvertravel);
+  var pZDist = Math.min(z - cycle.depth + cycle.probeClearance, cycle.retract);
+  
+  if(getProperty("showCycleVariables")) {//all relavant variables in cycle object for debugging. 
+    writeBlock("\n");
+    writeBlock("(----probing variables used for all ops----)");//________________________________________________________________________
+    writeBlock("(" + pEXP + " - EXPERIMENTAL)");
+    writeBlock("(" + pAngle + " - probe angle)");
+    writeBlock("(" + pApproach1 + " - probe approach direction 1)");
+    writeBlock("(" + pApproach2 + " - probe approach direction 2)"); 
+    writeBlock("(" + pBottom + " - probe bottom)");
+    writeBlock("(" + pDepth + " - probe depth)");        
+    writeBlock("(" + pFeed + " - probe Leadin Feedrate)");
+    writeBlock("(" + probeMeasureFeed + " - probe Measure Feedrate)");
+    writeBlock("(" + pAngleTolerance + " - has probe tolerance angle)");
+    writeBlock("(" + pPositionTolerance + " - probe positional tolerance)");
+    writeBlock("(" + pSizeTolerance + " - probe size tolerance)");
+    writeBlock("(" + pIncComponent + " - incremental component box checked)");
+    writeBlock("(" + pOutOfPos + " - outOfPositionAction)");
+    writeBlock("(" + pPrintRes + " - Print Results)");
+    writeBlock("(" + pAproach + " - probe clearance)");
+    writeBlock("(" + pOverTravel + " - probe overtravel)");
+    writeBlock("(" + pSpaceing + " - Probe Spacing)");
+    writeBlock("(" + pRetract + " - probe Retract)");
+    writeBlock("(" + pStock + " - Stock Height)");
+    writeBlock("(" + pToleranceAngle + " - Angle Tolerance)");
+    writeBlock("(" + pTolerancePos + " - Tolerance Position)");
+    writeBlock("(" + pToleranceSize + " - Tolerance Size)");
+    writeBlock("(" + pWidth1 + " - Width 1)");
+    writeBlock("(" + pWidth2 + " - Width 2)");
+    writeBlock("(" + pWrongSize + " - Wrong Size)");  
+    writeBlock("(----additional actions----)");//________________________________________________________________________
+    writeBlock("(" + pDir1 + " - probe approach direction)"); 
+    writeBlock("(" + pSetProbeAngle + " - Set Probe Angle)");
+    writeBlock("(----Derived combinations----)");//________________________________________________________________________
+    writeBlock("(" + pXYDist + " - total XY Probe Distance)");
+    writeBlock("(" + pZDist + " - total Z Probe Distance)");
+    writeBlock("\n");
+  }
+  /* produces the distance the probe needs to travel in X or Y to touch the part **/
+  switch (cycleType) { 
+    case "probing-x":
+      writeBlock("(probing X axis WCS - G38.2)");
+      onLinear(x,y,(cycle.stock - cycle.depth), feedrate); //bring probe down to measuring height 
+      writeBlock(gAbsIncModal.format(91)); // all G38 moves are incrimental by default but also contrlling debounce
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(pFeed), xOutput.format(pXYDist));
+      writeBlock(gAbsIncModal.format(91)); //switch to incrimental mode
+      writeBlock(gFormat.format(0), xOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(probeMeasureFeed), xOutput.format(pXYDist));
+      writeBlock(gFormat.format(10), "L20", "P0", "X" + -pDir1 * (tool.diameter / 2)); //coodinate set after double tap
+      writeBlock(gFormat.format(0), xOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(gAbsIncModal.format(90)); //switch back to WCS driven
+      writeBlock(gFormat.format(0), zOutput.format(cycle.retract));
+      break;
+    case "probing-y":
+      writeBlock("(probing Y axis WCS - G38.2)");
+      onLinear(x,y,(cycle.stock - cycle.depth), feedrate); //bring probe down to measuring height 
+      writeBlock(gAbsIncModal.format(91)); // all G38 moves are incrimental by default but also contrlling debounce
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(pFeed), yOutput.format(pXYDist));
+      writeBlock(gAbsIncModal.format(91)); //switch to incrimental mode
+      writeBlock(gFormat.format(0), yOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(probeMeasureFeed), yOutput.format(pXYDist));
+      writeBlock(gFormat.format(10), "L20", "P0", "Y" + -pDir1 * (tool.diameter / 2)); //coodinate set after double tap
+      writeBlock(gFormat.format(0), yOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(gAbsIncModal.format(90)); //switch back to WCS driven
+      writeBlock(gFormat.format(0), zOutput.format(cycle.retract));
+      break;
+    case "probing-z":
+      writeBlock("(probing Z axis WCS - G38.2)")
+      onLinear(x,y,(cycle.stock + cycle.retract), feedrate); //bring probe down to measuring height 
+      writeBlock(gAbsIncModal.format(91)); // all G38 moves are incrimental by default but also contrlling debounce
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(pFeed), zOutput.format(-pZDist));
+      writeBlock(gAbsIncModal.format(91)); //switch to incrimental mode
+      writeBlock(gFormat.format(0), zOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(probeMeasureFeed), zOutput.format(-pZDist));
+      writeBlock(gFormat.format(10), "L20", "P0", "Z0"); //coodinate set after double tap
+      writeBlock(gFormat.format(0), zOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(gAbsIncModal.format(90)); //switch back to WCS driven
+      writeBlock(gFormat.format(0), zOutput.format(cycle.retract));
+      break;
+    case "probing-xy-circular-hole":
+      writeBlock("(internal bore - G38.6 currently in development")
+      break;
+    case "probing-xy-circular-boss":
+      writeBlock("(external circular boss - G38.7 currently in development")
+      break;
+    case "probing-xy-rectangular-hole ":
+      writeBlock("(internal rectangular pocket - G38.8 currently in development")
+      break;
+    case "probing-xy-rectangular-boss ":
+      writeBlock("(external rectangular boss G38.9 currently in development")
+      break;
+    case "probing-x-wall"||"probing-y-wall":
+      writeBlock("(center one axis on 2 outside surfaces - G38.10 currently in development")
+      break;
+    case "probing-x-channel"||"probing-y-channel":
+      writeBlock("(center one axis on 2 inside surfaces - G38.11 currently in development")
+      break;
+    case "probing-xy-outer-corner":
+      writeBlock("(outside corner - G38.12 currently in development")
+      onLinear(x,y,(cycle.stock - cycle.depth), feedrate); //bring probe down to measuring height 
+      writeBlock(gAbsIncModal.format(91)); // all G38 moves are incrimental by default but also contrlling debounce
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(pFeed), xOutput.format(pXYDist));
+      writeBlock(gAbsIncModal.format(91)); //switch to incrimental mode
+      writeBlock(gFormat.format(0), xOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(probeMeasureFeed), xOutput.format(pXYDist));
+      writeBlock(gFormat.format(10), "L20", "P0", "X" + -pDir1 * (tool.diameter / 2)); //coodinate set after double tap
+      writeBlock(gFormat.format(0), xOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(gAbsIncModal.format(90)); //switch back to WCS driven
+      // writeBlock(gFormat.format(0), zOutput.format(cycle.retract));
+      writeBlock("(probing Y axis WCS - G38.2)");
+      onLinear(x,y,(cycle.stock - cycle.depth), feedrate); //bring probe down to measuring height 
+      writeBlock(gAbsIncModal.format(91)); // all G38 moves are incrimental by default but also contrlling debounce
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(pFeed), yOutput.format(pXYDist));
+      writeBlock(gAbsIncModal.format(91)); //switch to incrimental mode
+      writeBlock(gFormat.format(0), yOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(probeWCSFormat.format(38.2), feedOutput.format(probeMeasureFeed), yOutput.format(pXYDist));
+      writeBlock(gFormat.format(10), "L20", "P0", "Y" + -pDir2 * (tool.diameter / 2)); //coodinate set after double tap
+      writeBlock(gFormat.format(0), yOutput.format(-pDir1 * pAproach)); //retracts by the aproach value
+      writeBlock(gAbsIncModal.format(90)); //switch back to WCS driven
+      writeBlock(gFormat.format(0), zOutput.format(cycle.retract));
+      break;
+    case "probing-xy-inner-corner":
+      writeBlock("(inside corner - G38.13 currently in development")
+      break;
+    case "":
+      writeBlock("(rotate axis by probe - G38.14 currently in development")
+      break;
+    default:
+      // expandCyclePoint(x, y, z);//datron custom function
+      //from 10-251 of guide
+      if (isFirstCyclePoint() || isProbeOperation()) {
+        if (!isProbeOperation()) {
+        // return to initial Z which is clearance plane and set absolute mode
+        repositionToCycleClearance(x, y, z);
+        }
+      }
+  }
+  
+  forceXYZ();
+    } else {
+      // writeDrillCycle(cycle, x, y, z);
+      // forceXYZ();
+    }
+} //onCyclePoint end
+
+function onCycleEnd() {
+  if (isProbeOperation()) {
+    zOutput.reset();
+    gMotionModal.reset();
+    // gMotionModal.format(91); // thinking about weather there needs to be an incrimental move up off the surface. 
+    writeBlock(gMotionModal.format(0), zOutput.format(cycle.clearance));
+    // writeBlock(gFormat.format(65), "P" + 9810, zOutput.format(cycle.retract)); // protected retract move
+  } // else {}  there is typically an else case here for things that need to happen when onCycle is serving more than probing
+    
 }
 
 var currentWorkPlaneABC = undefined;
@@ -752,25 +1033,11 @@ function getWorkPlaneMachineABC(workPlane) {
 
   return abc;
 }
-
-// Parse the TLO value from a comment
-function parseTLO(comment) {
-  if (!comment) {
-      return null; // Return null if no comment exists
-  }
-
-  // Match the pattern TLO:X, where X is a letter or a number
-  var match = comment.match(/TLO:([AMam0-9.-]+)/);
-  if (match) {
-      return match[1];
-  }
-  return null;
-}
-
+/* onSection processes every new opperation **/
 function onSection() {
   var insertToolCall = isFirstSection() ||
     currentSection.getForceToolChange && currentSection.getForceToolChange() ||
-    (tool.number != getPreviousSection().getTool().number) || (getProperty("splitFile") == "toolpath" && getProperty("splitFileHeader"));
+    (tool.number != getPreviousSection().getTool().number); // checks if differnt tool from previous op
 
   var splitHere = getProperty("splitFile") == "toolpath" || (getProperty("splitFile") == "tool" && insertToolCall);
 
@@ -826,6 +1093,13 @@ function onSection() {
       subprogram = programName + "_" + (subprograms.length + 1) + "_" + "T" + tool.number;
     }
 
+    // var index = 0;
+    // var _subprogram = subprogram;
+    // while (subprograms.indexOf(_subprogram) !== -1) {
+    //   index++;
+    //   _subprogram = subprogram + "_" + index;
+    // }
+    // subprogram = _subprogram;
     subprograms.push(subprogram);
 
     var path = FileSystem.getCombinedPath(FileSystem.getFolderPath(getOutputPath()), String(subprogram).replace(/[<>:"/\\|?*]/g, "") + "." + extension);
@@ -840,20 +1114,21 @@ function onSection() {
     if (programComment) {
       writeComment(programComment);
     }
-    // Absolute coordinates and feed per min
-    writeBlock("G90 G94 G17");
+
+    // absolute coordinates and feed per min
+    writeBlock(gAbsIncModal.format(90), gFeedModeModal.format(94));
+    writeBlock(gPlaneModal.format(17));
 
     switch (unit) {
-      case IN:
-        writeBlock("G20");
-        break;
-      case MM:
-        writeBlock("G21");
-        break;
+    case IN:
+      writeBlock(gUnitModal.format(20));
+      break;
+    case MM:
+      writeBlock(gUnitModal.format(21));
+      break;
     }
+
   }
-
-
 
   if (hasParameter("operation-comment")) {
     var comment = getParameter("operation-comment");
@@ -867,56 +1142,85 @@ function onSection() {
 
     if (tool.number > numberOfToolSlots) {
       warning(localize("Tool number exceeds maximum value."));
-    } 
-    
-    var tloValue = parseTLO(tool.comment);//A is automatic and is the default, M is manual setting (C=0), a number set the value directly (H=-14)
-
-    var e_manualToolChangeBehavior = getProperty("manualToolChangeBehavior");
-
-    if(tool.number > 6 && e_manualToolChangeBehavior == "error6") {
-      error(localize("Carvera does not support tool numbers greater than 6 by default. Use one of the manual tool change post processor settings"));
     }
 
-    if (e_manualToolChangeBehavior == "carvAirMtc"){ //any tool number accepted
-      writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
+    
+    if (tool.number > 6 || tool.manualToolChange) {
+      writeComment("Manual Tool Change To #" + toolFormat.format(tool.number));
+	  if (tool.manualToolChange) {
+		writeComment("as a result of manual tool change selected in tool settings");
+	  }
 
       if (tool.comment) {
         writeComment(tool.comment);
       }
-    }else if (e_manualToolChangeBehavior == "carvcomMtc"){
 
-      if (tloValue) {
-        if (tloValue === "A") {
-            writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " C1");
-        } else if (tloValue === "M") {
-            writeToolBlock(mFormat.format(6),"T" + toolFormat.format(tool.number) + " C0");
-        } else {
-            var tloFloat = parseFloat(tloValue);
-            if (!isNaN(tloFloat)) {
-                writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " H" + tloFloat);
-            } else {
-                writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
-            }
-        }
+      writeComment("Setup for tool change");
+      if (previousToolChangeWasManual ||  isFirstSection()){
+        writeBlock("G28");
+        writeComment("Paused. Prepare to remove tool from collet. Pressing play will release collet");
+        writeBlock(mFormat.format(27));
+        writeBlock(mFormat.format(600));
+        writeBlock("M490.2 (Open Collet)");
+
       } else {
-          writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
-      }      
-    }else if (tool.number > 6 || tool.manualToolChange) {
-      writeComment("Manual Tool Change To #" + toolFormat.format(tool.number));
-      if (tool.manualToolChange) {
-        writeComment("as a result of manual tool change selected in tool settings");
+        writeBlock("T-1 M6");
+        writeBlock("G28");
       }
-      performStockManualToolChange(tloValue);
+
+
+      previousToolChangeWasManual = true;
+
+      writeComment("Paused. Prepare to add new tool to collet. Pressing play will close collet");
+      writeBlock(mFormat.format(27));
+      writeBlock(mFormat.format(600));
+      writeBlock("M490.1 (Close Collet)");
+      writeComment("Paused. Pressing play will calibrate the tool length and continue the program");
+      writeBlock(mFormat.format(27));
+      writeBlock(mFormat.format(600));
+      writeBlock("M493.2T1 (Set tool number to 1 so TLO can be set)");
+      writeBlock("M491 (Calibrate Tool Length)");
+
+    
+
 
     } else if ((!isFirstSection() && getProperty("useShankSizeForManualChange") && Math.abs(tool.shaftDiameter - getPreviousSection().getTool().shaftDiameter)  >  0.001)){
         
         writeComment("Manual Tool Change To #" + toolFormat.format(tool.number));
 		    writeComment("as a result of tool shank size change");
-        performStockManualToolChange(tloValue);
+
+        if (tool.comment) {
+          writeComment(tool.comment);
+        }
+
+
+        if (previousToolChangeWasManual ||  isFirstSection()){
+        writeBlock("G28");
+        writeComment("Paused. Prepare to remove tool from collet. Pressing play will release collet");
+        writeBlock(mFormat.format(27));
+        writeBlock(mFormat.format(600));
+        writeBlock("M490.2 (Open Collet)");
+
+      } else {
+        writeBlock("T-1 M6");
+        writeBlock("G28");
+      }
+
+      previousToolChangeWasManual = true;
+      writeComment("Paused. Prepare to add new tool to collet. Pressing play will close collet");
+      writeBlock(mFormat.format(27));
+      writeBlock(mFormat.format(600));
+      writeBlock("M490.1 (Close Collet)");
+      writeComment("Paused. Pressing play will calibrate the tool length and continue the program");
+      writeBlock(mFormat.format(27));
+      writeBlock(mFormat.format(600));
+      writeBlock("M493.2T" + toolFormat.format(tool.number));
+      writeBlock("M491 (Calibrate Tool Length)");
+      
 
     } else {
-        if (previousToolChangeWasManual && e_manualToolChangeBehavior == "fusionMtc") {
-		      writeComment("Manual Tool Removal as a result of previous manual tool change");
+        if (previousToolChangeWasManual) {
+		  writeComment("Manual Tool Removal as a result of previous manual tool change");
           writeComment("setup for tool change");
           writeBlock("G28");
           writeComment("Paused. Prepare to remove tool from collet. Pressing play will release collet");
@@ -929,7 +1233,8 @@ function onSection() {
           writeBlock("M493.2 T-1");
           
         }
-        writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
+        //TODO need to confirm T0 is probe and then trace the tool back to fusion .cnc file
+        writeToolBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
 
         if (tool.comment) {
           writeComment(tool.comment);
@@ -950,13 +1255,16 @@ function onSection() {
             }
             writeComment(localize("ZMIN") + "=" + zRange.getMinimum());
           }
-														  
         }
-																   
       }
     
   }
-
+  if (tool.type != TOOL_PROBE) {
+    var outputSpindleSpeed = insertToolCall || forceSpindleSpeed || isFirstSection() ||
+    rpmFormat.areDifferent(spindleSpeed, sOutput.getCurrent()) ||
+    (tool.clockwise != getPreviousSection().getTool().clockwise);
+  }
+  // setProbeAngle(); // output probe angle rotations if required
   var spindleChanged = tool.type != TOOL_PROBE &&
     (insertToolCall || forceSpindleSpeed || isFirstSection() ||
     (rpmFormat.areDifferent(spindleSpeed, sOutput.getCurrent())) ||
@@ -1033,53 +1341,22 @@ function onSection() {
       yOutput.format(initialPosition.y)
     );
   }
-}
-
-function performStockManualToolChange(tloValue) {
-  
-
-  if (tool.comment) {
-    writeComment(tool.comment);
-  }
-
-  writeComment("Setup for tool change");
-  if (previousToolChangeWasManual || isFirstSection()) {
-    writeBlock("G28");
-    writeComment("Paused. Prepare to remove tool from collet. Pressing play will release collet");
-    writeBlock(mFormat.format(27));
-    writeBlock(mFormat.format(600));
-    writeBlock("M490.2 (Open Collet)");
-
-  } else {
-    writeBlock("T-1 M6");
-    writeBlock("G28");
-  }
-
-
-  previousToolChangeWasManual = true;
-
-  writeComment("Paused. Prepare to add new tool to collet. Pressing play will close collet");
-  writeBlock(mFormat.format(27));
-  writeBlock(mFormat.format(600));
-  writeBlock("M490.1 (Close Collet)");
-
-  var tloFloat = parseFloat(tloValue);
-
-  if (tloValue == "M" || !isNaN(tloFloat)) {
-    writeComment("Paused. Use the manual control interface to set the tool length.");
-    writeComment("Pressing play will goto the clearance position, then continue the program.");
-    writeBlock(mFormat.format(27));
-    writeBlock(mFormat.format(600));
-    writeBlock("G28 (Move To Clearance)");
-
-  } else {
-    writeComment("Paused. Pressing play will calibrate the tool length and continue the program");
-    writeBlock(mFormat.format(27));
-    writeBlock(mFormat.format(600));
-    writeBlock("M493.2T1 (Set tool number to 1 so TLO can be set)");
-    writeBlock("M491 (Calibrate Tool Length)");
-  }
-}
+  if (isProbeOperation()) {
+    validate(probeVariables.probeAngleMethod != "G68", "You cannot probe while G68 Rotation is in effect.");
+    validate(probeVariables.probeAngleMethod != "G54.4", "You cannot probe while workpiece setting error compensation G54.4 is enabled.");
+    // writeBlock(gFormat.format(65), "P" + 9832); // spin the probe on
+    //TODO may want to consider a M841 to turn the WP charger on here.
+    // inspectionCreateResultsFileHeader(); //may get used later for inspection ops
+    } else {
+    // surface Inspection
+    if (isInspectionOperation() && (typeof inspectionProcessSectionStart == "function")) {
+      // inspectionProcessSectionStart(); //This function does not exist, but can ref from Datron next surface inspect.cps
+      }
+    }
+    // define subprogram
+  // subprogramDefine(initialPosition, abc, retracted, zIsOutput);
+  retracted = false;
+} // end of onSection()
 
 function onDwell(seconds) {
   if (seconds > 99999.999) {
@@ -1279,13 +1556,21 @@ function onCommand(command) {
   switch (command) {
   case COMMAND_STOP:
     
-    writeBlock(mFormat.format(600));
+    writeBlock(mFormat.format(0));
     forceSpindleSpeed = true;
     forceCoolant = true;
+    writeComment("Optional Stop End");
     return;
   case COMMAND_OPTIONAL_STOP:
-    writeComment("Optional Stop Start");
-    writeBlock(mFormat.format(1));
+    writeComment("Optional");
+    writeComment("Stop");
+    writeComment("Start");
+    writeBlock(mFormat.format(5));
+    writeBlock("G28");
+    writeBlock(mFormat.format(27));
+
+    writeBlock(mFormat.format(5));
+    writeBlock(mFormat.format(600));
     forceSpindleSpeed = true;
     forceCoolant = true;
     writeComment("Optional Stop End");
@@ -1297,15 +1582,11 @@ function onCommand(command) {
     return;
   case COMMAND_UNLOCK_MULTI_AXIS:
     return;
+  case COMMAND_BREAK_CONTROL:
+    return;
   case COMMAND_TOOL_MEASURE:
-    writeComment("Calibrate TLO");
     writeBlock(mFormat.format(490));
     return;
-  case COMMAND_BREAK_CONTROL:
-    writeComment("Tool Break Test");
-    writeBlock("M491.1");
-    return;
-  
   }
 
   var stringId = getCommandStringId(command);
@@ -1326,6 +1607,13 @@ function onSectionEnd() {
     setCoolant(COOLANT_OFF);
   }
   forceAny();
+  if (isProbeOperation()) {
+    // writeBlock(gFormat.format(65), "P" + 9833); // spin the probe off
+    //TODO decent place to turn the WP charge power off M842
+    if (probeVariables.probeAngleMethod != "G68") {
+      setProbeAngle(); // output probe angle rotations if required
+    }
+  }
 }
 
 /** Output block to do safe retract and/or move to home position. */
@@ -1350,7 +1638,23 @@ function writeRetract() {
 var currentCoolantMode = COOLANT_OFF;
 var coolantOff = undefined;
 var forceCoolant = false;
+var isDPRNTopen = false;
 
+function inspectionCreateResultsFileHeader() {
+writeBlock("(inspectionCreateResultsFileHeader)");
+}
+function getPointNumber() {
+// …
+}
+function inspectionWriteCADTransform() {
+// …
+}
+function inspectionWriteWorkplaneTransform() {
+// …
+}
+function writeProbingToolpathInformation(cycleDepth) {
+// .
+}
 function setCoolant(coolant) {
   var coolantCodes = getCoolantCodes(coolant);
   if (Array.isArray(coolantCodes)) {
@@ -1474,6 +1778,93 @@ function onReturnFromSafeRetractPosition(_x, _y, _z) {
 }
 // End of onRewindMachine logic
 
+/** copied from dation C5.cps, used for translation into other languages on text output */
+function translate(text) {
+  switch (getProperty("language")) {
+  case "en":
+    return text;
+  case "de":
+    switch (text) {
+    case "Tcheck":
+      return "Wzkontr";
+    case "Coolant":
+      return "Sprueh";
+    case "Condition":
+      return "Bedingung";
+    case "Submacro":
+      return "Submakro";
+    case "Dynamics":
+      return "Dynamik";
+    case "Contour_smoothing":
+      return "Konturglaettung";
+    case "Label":
+      return "Markierung";
+    case "Tcomp":
+      return "Fkomp";
+    case "Message":
+      return "Melde";
+    case "Feed":
+      return "Vorschub";
+    case "Rpm":
+      return "Drehzahl";
+    case "Number of tools in use":
+      return "Anzahl der benutzten Werkzeuge";
+    case "Tool":
+      return "Werkzeug";
+    case "Drill":
+      return "Bohren";
+    case "Circle":
+      return "Kreis";
+    case "Thread":
+      return "Gewinde";
+    case "Setzp":
+      return "Setrel";
+    case "Workpiece dimensions":
+      return "Abmessungen Werkstueck";
+    case "Zeromem":
+      return "Relsp";
+    case "Description":
+      return "Beschreibung";
+    case "Part size":
+      return "Groesse";
+    case "Zheight":
+      return "Zhmess";
+    case "Rotation":
+      return "Drehung";
+    case "ToolRetraction":
+      return "Wzrueckzug";
+    case "Shift":
+      return "Verschieben";
+    case "Tilt":
+      return "Schwenken";
+    case "\r\n________________________________________" +
+        "\r\n|              error                    |" +
+        "\r\n|                                       |" +
+        "\r\n| 4/5 axis operations detected.         |" +
+        "\r\n| You have to enable the property       |" +
+        "\r\n| got4thAxis or got5Axis,               |" +
+        "\r\n| otherwise you can only post           |" +
+        "\r\n| 3 Axis programs.                      |" +
+        "\r\n| If you still have issues,             |" +
+        "\r\n| please contact www.DATRON.com!        |" +
+        "\r\n|_______________________________________|\r\n":
+      return "\r\n________________________________________" +
+        "\r\n|              Fehler                    |" +
+        "\r\n|                                        |" +
+        "\r\n| 4/5 Achs Operationen gefunden.         |" +
+        "\r\n| Sie muessen die Property               |" +
+        "\r\n| got4thAxis bzw. got5thAxis aktivieren, |" +
+        "\r\n| andernfalls koennen Sie lediglich      |" +
+        "\r\n| 3 Achsen Programme erzeugen.           |" +
+        "\r\n| Besteht das Problem weiterhin,         |" +
+        "\r\n| wenden Sie sich bitte an www.datron.de |" +
+        "\r\n|________________________________________|\r\n";
+    }
+    break; // end of German
+  }
+  return text; // use English
+}
+
 function onClose() {
   setCoolant(COOLANT_OFF);
 
@@ -1488,4 +1879,14 @@ function onClose() {
     closeRedirection();
   }
   previousToolChangeWasManual = false;
+
+  if (isDPRNTopen) {
+    writeln("DPRNT[END]");
+    writeBlock("PCLOS");
+    isDPRNTopen = false;
+    if (typeof inspectionProcessSectionEnd == "function") {
+      inspectionProcessSectionEnd();
+    }
+  }
+   
 }
