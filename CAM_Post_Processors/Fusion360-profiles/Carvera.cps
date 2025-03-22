@@ -1271,9 +1271,7 @@ function baseCycleHandler(cycle, tool) {
 // These are limited to basic operations that set a WCS coincident to a face. 
 function makeraFirmwareCycleHandler(cycle, tool) {
   const handler = baseCycleHandler(cycle, tool);
-
-  const carveraAir = handler.probeToolBehavior.startsWith("carveraAir");
-
+  
   // touchProbe measures towards axis towards the signed distance. It double-taps and
   // leaves the probe touching the material.
   const touchProbe = (obj) => {
@@ -1281,11 +1279,9 @@ function makeraFirmwareCycleHandler(cycle, tool) {
     const axis = Object.keys(obj)[0];
     const distance = obj[axis];
     writeComment(`begin touchProbe`);
-    if (carveraAir) writeBlock("M494.1");
     handler.measureMoveFast({ [axis]: distance });
     handler.relativeMove({ [axis]: - Math.sign(distance) * tool.diameter * 2 });
     handler.measureMoveSlow({ [axis]: distance });
-    if (carveraAir) writeBlock("M494.2");
     writeComment(`end touchProbe`);
   };
 
@@ -1519,9 +1515,14 @@ function onCyclePoint(x, y, z) {
     expandCyclePoint(x, y, z);
   }
 
+  // Enable the probe laser if we're using the Carvera Air
+  const carveraAir = getProperty("probeToolBehavior").startsWith("carveraAir");
+
+  if (carveraAir) writeBlock("M494.1");
   cycleHandler.absoluteMove({ x: x, y: y, z: z });
   cycleHandler[cycleType](x, y, z);
   cycleHandler.absoluteMove({ x: x, y: y, z: z });
+  if (carveraAir) writeBlock("M494.2");
 }
 
 // ====================================================== //

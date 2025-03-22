@@ -21,20 +21,43 @@ probing operations you never knew existed!
 
 ## Equipment needed
 
-TODO: Link to various places to get probes.
-
 ![alt text](<screenshots/touch probe.png>)
 
 [Fae's Instructables](http://instructables.com/Carvera-Touch-Probe-Modifications/) on probe modifications, wiring up power, gcodes, and more.
 
-## Setting up your probe
+The main thing you need to make sure of is that the probe fits in your spindle. Most of the Aliexpress / Amazon probes we've found have a 6mm shank, so you'll need the [6mm spindle collet](https://www.makera.com/products/spindle-collet?variant=43448718885089) from Makera to have them fit.
 
-*TODO*
+NC or NO variants should both work if you select the correct one in the post-processor. Note: only NC has been tested so far.
 
-## Importing the probe
+The probe will come with a USB-C pigtail cable. One end will have USB-C for the probe, the other will be three wires. You'll need to crimp on a JST XH-4Y connector as shown below.
 
-*TODO*
+![alt text](screenshots/connector.png)
 
+* [PGFUN CNC Touch Probe](https://www.amazon.com/dp/B0B3XMFDX5) (Amazon)
+* [V5 Touch Probe compatible with mach3 and grbl](https://www.aliexpress.us/item/3256803607054329.html) (Aliexpress, note the page defaults to the stylus not the probe)
+
+## Fusion setup
+
+Import the [probe tool](<probe tool.json>) into your tool library, or set one up yourself. Especially check the measurements to make sure yours matches.
+
+![alt text](screenshots/probe-tool-stylus.png)
+
+![alt text](screenshots/probe-tool-post.png)
+
+Note that *manual tool change* has been selected! Also the tool should not be numbered 1-6 to prevent confusion with the ATC on the Carvera.
+
+In your post-processor setup, there are three options you need to care about.
+
+![alt text](screenshots/probe-post-settings.png)
+
+This shows settings for the Carvera, but there are settings for the Carvera Air in there too. Since the Air does manual tool changes you should be able to keep that setting as is.
+
+> [!WARNING]
+> Failing to set Probe Sensor Type correctly is guaranteed to lead to a crash!
+
+1. For the origin Carvera, use Fusion Manual Tool changes. The post-processor will detect you're using a tool numbered outside 1-6 and the controller will pause the program to prompt you to change tools.
+2. Probe Sensor Type *must be set correctly* because it governs whether the probe will stop moving when it touches a surface, or keep going and potentially destroy itself.
+3. Probe Tool Behavior - this allows you to select the community firmware gcodes for probing (still a work in progress) or gcodes for stock firmware. Selecting the Air will make sure the probe laser is turned on to power the probe throughout.
 
 ## Probing 101
 
