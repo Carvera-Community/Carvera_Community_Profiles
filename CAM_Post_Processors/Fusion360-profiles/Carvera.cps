@@ -182,6 +182,32 @@ properties = {
     value      : true,
     scope      : "post"
   },
+  probeToolBehavior: {
+    title: "Probe Tool Behavior",
+    description: "Select the behavior that matches your machine and firmware. Community firmware supports a mucher wider variety of probing operations, such as bores, bosses, angled surfaces, etc.",
+    group: "preferences",
+    type: "enum",
+    values: [
+      { title: "Carvera (stock firmware)", id: "carveraStock" },
+      { title: "Carvera (community firmware)", id: "carveraCommunity" },
+      { title: "Carvera Air (stock firmware)", id: "carveraAirStock" },
+      { title: "Carvera Air (community firmware)", id: "carveraAirCommunity" },
+    ],
+    value: "carveraStock",
+    scope: "post",
+  },
+  probeSensorType: {
+    title: "Probe Sensor Type",
+    description: "Set to NO (normally open) or NC (normally closed). If this value does not match the probe sensor it is guaranteed to cause a crash.",
+    group: "preferences",
+    type: "enum",
+    values: [
+      { title: "NC (normally closed)", id: "NC" },
+      { title: "NO (normally open)", id: "NO" },
+    ],
+    value: "NC",
+    scope: "post",
+  },
 };
 
 // wcs definiton
@@ -224,6 +250,7 @@ var toolFormat = createFormat({decimals:0});
 var rpmFormat = createFormat({decimals:0});
 var secFormat = createFormat({decimals:3, forceDecimal:true}); // seconds - range 0.001-1000
 var taperFormat = createFormat({decimals:1, scale:DEG});
+var angleFormat = createFormat({decimals:0, scale:DEG});
 
 var xOutput = createVariable({prefix:"X"}, xyzFormat);
 var yOutput = createVariable({prefix:"Y"}, xyzFormat);
@@ -245,6 +272,7 @@ var gPlaneModal = createModal({onchange:function () {gMotionModal.reset();}}, gF
 var gAbsIncModal = createModal({}, gFormat); // modal group 3 // G90-91
 var gFeedModeModal = createModal({}, gFormat); // modal group 5 // G93-94
 var gUnitModal = createModal({}, gFormat); // modal group 6 // G20-21
+var gCycleModal = createOutputVariable({ control: CONTROL_FORCE }, createFormat({prefix:"G", decimals:1}));
 
 var WARNING_WORK_OFFSET = 0;
 
@@ -1092,6 +1120,414 @@ function onDwell(seconds) {
 function onSpindleSpeed(spindleSpeed) {
   writeBlock(sOutput.format(spindleSpeed));
 }
+
+// ====================================================== //
+// ================ BEGIN CYCLE HANDLERS ================ //
+// ====================================================== //
+
+
+// baseCycleHandler defines all known cycle types and establishes default
+// handlers. If new probe or cycle types appear, they should be added here. To
+// add implementations, extend makeraFirmwareCycleHandler or
+// communityFirmwareCycleHandler, or roll a new one.
+//
+// several pre-calculated fields are set up on handler, please refer to them in
+// your implementations.
+function baseCycleHandler(cycle, tool) {
+
+  var handler = {
+    probeRadius: tool.diameter / 2,
+    // Set in the UI as "measure feedrate". Note from Fusion docs: "If the probe
+    // is set up to perform two touches, the first touch is at the Lead-In
+    // Feedrate and then the second touch is at the Measure Feedrate."
+    measureFeed: currentSection.getParameter("operation:tool_feedProbeMeasure"),
+    // Set in the UI as "link feedrate"
+    linkFeed: currentSection.getParameter("operation:tool_feedProbeLink"),
+    // Set in the UI as "lead-in feedrate"
+    entryFeed: currentSection.getParameter("operation:tool_feedEntry"),
+    drivingWcs: currentSection.workOffset,
+    targetWcs: currentSection.probeWorkOffset,
+    approach1: (cycle.approach1 == "positive" ? 1 : -1),
+    approach2: (cycle.approach2 == "positive" ? 1 : -1),
+    probeSensorType: getProperty("probeSensorType"),
+    probeToolBehavior: getProperty("probeToolBehavior"),
+  };
+
+  // probeMove constructs functions that move the probe at a specified rate in
+  // absolute mode. Coordinates are given as maps of the form {x:n, y:n, z:n}.
+  // Giving two or more coordinates will execute multiple separate moves.
+  // protected = true uses G moves based on sensor type, which will stop in the
+  // event of a collision.
+  const probeMove = (motion, feed, absolute = true) => {
+    return (...axes) => {
+      for (const { x, y, z } of axes) {
+        const args = [
+          motion.startsWith("G38.") ? null : gAbsIncModal.format(absolute ? 90 : 91),
+          motion
+        ].filter(Boolean);
+        
+        x && args.push(xOutput.format(x));
+        y && args.push(yOutput.format(y));
+        z && args.push(zOutput.format(z));
+
+        feedOutput.reset();
+        args.push(feedOutput.format(feed));
+
+        writeBlock.apply(null, args);
+      }
+    };
+  };
+
+  handler.absoluteMove = probeMove(
+    gMotionModal.format(1),
+    handler.entryFeed,
+    true
+  );
+
+  handler.relativeMove = probeMove(
+    gCycleModal.format(handler.probeSensorType == "NC" ? 38.3 : 38.5),
+    handler.entryFeed,
+    false
+  );
+
+  handler.measureMoveFast = probeMove(
+    gCycleModal.format(handler.probeSensorType == "NC" ? 38.2 : 38.4),
+    handler.measureFeed*2,
+    false
+  );
+
+  handler.measureMoveSlow = probeMove(
+    gCycleModal.format(handler.probeSensorType == "NC" ? 38.2 : 38.4),
+    handler.measureFeed,
+    false
+  );
+
+  var probingCycleTypes = [
+    "probing-x",
+    "probing-y",
+    "probing-z",
+    "probing-x-wall",
+    "probing-y-wall",
+    "probing-x-channel",
+    "probing-y-channel",
+    "probing-x-channel-with-island",
+    "probing-y-channel-with-island",
+    "probing-xy-circular-boss",
+    "probing-xy-circular-partial-boss",
+    "probing-xy-circular-partial-boss-with-island",
+    "probing-xy-circular-hole",
+    "probing-xy-circular-partial-hole",
+    "probing-xy-circular-hole-with-island",
+    "probing-xy-circular-partial-hole-with-island",
+    "probing-xy-rectangular-boss",
+    "probing-xy-rectangular-hole",
+    "probing-xy-rectangular-hole-with-island",
+    "probing-xy-inner-corner",
+    "probing-xy-outer-corner",
+    "probing-xy-pcd-boss",
+    "probing-xy-pcd-hole",
+    "probing-yz-circular-hole",
+    "probing-x-plane-angle",
+    "probing-y-plane-angle",
+  ]
+
+  // For probe types we error out if we're asked to do one.
+  probingCycleTypes.forEach(function (v) {
+    handler[v] = (x, y, z) => {
+      error(localize(`Probing cycle '${v}' is not supported by Carvera.`));
+    };
+  });
+
+  var drillingCycleTypes = [
+    "drilling",
+    "counter-boring",
+    "chip-breaking",
+    "deep-drilling",
+    "break-through-drilling",
+    "gun-drilling",
+    "tapping",
+    "left-tapping",
+    "right-tapping",
+    "tapping-with-chip-breakinreaming",
+    "boring",
+    "stop-boring",
+    "fine-boring",
+    "back-boring",
+    "circular-pocket-milling",
+    "thread-milling"
+  ];
+
+  // For drilling types we just call expandPointCycle
+  drillingCycleTypes.forEach(function (v) {
+    handler[v] = function (x, y, z) {
+      expandCyclePoint(x, y, z);
+    }
+  });
+
+  return handler;
+}
+
+// makeraFirmwareCycleHandler sets up handlers for the probe cycle types supported by the stock firmware.
+// These are limited to basic operations that set a WCS coincident to a face. 
+function makeraFirmwareCycleHandler(cycle, tool) {
+  const handler = baseCycleHandler(cycle, tool);
+
+  const carveraAir = handler.probeToolBehavior.startsWith("carveraAir");
+
+  // touchProbe measures towards axis towards the signed distance. It double-taps and
+  // leaves the probe touching the material.
+  const touchProbe = (obj) => {
+    // I know, I know ... in my defense I want to keep the args looking similar.
+    const axis = Object.keys(obj)[0];
+    const distance = obj[axis];
+    writeComment(`begin touchProbe`);
+    if (carveraAir) writeBlock("M494.1");
+    handler.measureMoveFast({ [axis]: distance });
+    handler.relativeMove({ [axis]: - Math.sign(distance) * tool.diameter * 2 });
+    handler.measureMoveSlow({ [axis]: distance });
+    if (carveraAir) writeBlock("M494.2");
+    writeComment(`end touchProbe`);
+  };
+
+  // updateWCS updates the WCS for this probe using the axis provided.
+  const updateWCS = (axis, offset) => {
+    writeBlock(
+      gFormat.format(10),
+      `L20 P${handler.targetWcs}`,
+      axis.format(offset)
+    );
+  };
+
+  const handlers = {
+    "probing-x": (x, y, z) => {
+      const probeDatum = x + handler.approach1 * (cycle.probeClearance + handler.probeRadius);
+      handler.relativeMove({ z: - cycle.depth });
+      touchProbe({ x: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel) });
+      updateWCS(xOutput, probeDatum);
+      handler.absoluteMove({ x: x });
+    },
+    "probing-y": (x, y, z) => {
+      const probeDatum = y + handler.approach1 * (cycle.probeClearance + handler.probeRadius);
+      handler.relativeMove({ z: - cycle.depth });
+      touchProbe({ y: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel) });
+      updateWCS(yOutput, probeDatum);
+      handler.absoluteMove({ y: y });
+    },
+    "probing-z": (x, y, z) => {
+      const probeDatum = z - cycle.depth;
+      touchProbe({ z: handler.approach1 * cycle.depth });
+      updateWCS(zOutput, probeDatum);
+    },
+    "probing-xy-outer-corner": (x, y, z) => {
+      const offset = cycle.probeClearance + handler.probeRadius;
+      const probeDatumX = x + handler.approach1 * offset;
+      const probeDatumY = y + handler.approach2 * offset;
+
+      // Move to start depth
+      handler.relativeMove({ z: - cycle.depth });
+
+      // Probing X: move up in Y, probe in X, return to X, return to Y
+      writeComment(`probing x surface`)
+      handler.relativeMove({ y: handler.approach2 * offset * 2 });
+      touchProbe({ x: handler.approach1 * (offset + cycle.probeOvertravel) });
+      updateWCS(xOutput, probeDatumX);
+      handler.absoluteMove({ x: x }, { y: y });
+
+      // Probing Y: move up in X, probe in Y, return to Y, return to X
+      writeComment(`probing y surface`)
+      handler.relativeMove({ x: handler.approach1 * offset * 2 });
+      touchProbe({ y: handler.approach2 * (offset + cycle.probeOvertravel) });
+      updateWCS(yOutput, probeDatumY);
+      handler.absoluteMove({ y: y }, { x: x });
+    },
+    "probing-xy-inner-corner": (x, y, z) => {
+      const offset = cycle.probeClearance + handler.probeRadius;
+      const probeDatumX = x + handler.approach1 * offset;
+      const probeDatumY = y + handler.approach2 * offset;
+
+      // Move to start depth
+      handler.relativeMove({ z: - cycle.depth });
+
+      writeComment(`probing x surface`)
+      touchProbe({ x: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel) });
+      updateWCS(xOutput, probeDatumX);
+      handler.absoluteMove({ x: x });
+
+      writeComment(`probing y surface`)
+      touchProbe({ y: handler.approach2 * (cycle.probeClearance + cycle.probeOvertravel) });
+      updateWCS(yOutput, probeDatumY);
+      handler.absoluteMove({ y: y });
+    }
+  };
+
+  return { ...handler, ...handlers };
+}
+
+// NOT FUNCTIONAL YET
+// communityFirmwareCycleHandler sets up handlers for the probe cycle types
+// supported by the community firmware.
+function communityFirmwareCycleHandler(cycle, tool) {
+  const handler = baseCycleHandler(cycle, tool);
+
+  const formatParameters = (params, valid) => {
+    const formatted = [];
+    for (const [key, value] of Object.entries(params)) {
+      if (!valid.includes(key)) {
+        error(`Invalid parameter: ${key}`);
+      }
+
+      switch (key) {
+        case "x":
+          formatted.push("X" + xOutput.format(value));
+          break;
+        case "y": 
+          formatted.push("Y" + yOutput.format(value));
+          break;
+        case "z":
+          formatted.push("Z" + zOutput.format(value));
+          break;
+        case "f":
+          formatted.push("F" + feedOutput.format(value));
+          break;
+        case "k":
+          formatted.push("K" + feedOutput.format(value));
+          break;
+        case "d":
+          formatted.push("D" + toolFormat.format(value));
+          break;
+        case "h":
+          formatted.push("H" + xyzFormat.format(value));
+          break;
+        case "c":
+          formatted.push("C" + xyzFormat.format(value));
+          break;
+        case "e":
+          formatted.push("E" + xyzFormat.format(value));
+          break;
+        case "l":
+          formatted.push("L" + integerFormat.format(value));
+          break;
+        case "q":
+          formatted.push("Q" + angleFormat.format(value));
+          break;
+        case "r":
+          formatted.push("R" + xyzFormat.format(value));
+          break;
+        case "s":
+          formatted.push("S" + integerFormat.format(value));
+          break;
+        case "i":
+          if (![0,1].includes(value)) {
+            error(`I parameter must be 0 or 1`);
+          }
+          formatted.push("I" + integerFormat.format(value));
+          break;
+      }
+    }
+    return formatted;
+  }
+
+  const straightProbe = (options) => {
+    writeComment(`straight probe with double tap - M466`);
+    const opts = ["x", "y", "z", "d", "q", "l", "r", "s", "f", "i",];
+    options.i = handler.probeSensorType == "NC" ? 0 : 1;
+    const params = formatParameters(options, opts);
+    writeBlock("M466", ...params);
+  };
+
+  // updateWCS updates the WCS for this probe using the axis provided.
+  // TODO: we need to figure out which variables to use. Per how Fusion works (https://forums.autodesk.com/t5/fusion-manufacture/probing-routine-not-updating-offset-correctly/m-p/10954277/highlight/true#M117429)
+  // It might be easier to tweak the macros to understand how to do this?
+  const updateWCS = (axis, offset) => {
+    writeBlock(
+      gFormat.format(10),
+      `L2 P${handler.targetWcs}`,
+      axis.format(offset)
+    );
+  };
+  
+  const handlers = {
+    "probing-x": (x, y, z) => {
+      // Calculate the expected probe contact point 
+      const probeDatum = x + handler.approach1 * (cycle.probeClearance + handler.probeRadius);
+
+      handler.relativeMove({ z: - cycle.depth });
+
+      straightProbe({
+        x: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel), 
+        f: handler.measureFeed,
+        d: tool.diameter,
+        s: 0,
+        i: handler.probeSensorType == "NC" ? 0 : 1});
+
+      updateWCS(xOutput, probeDatum);
+
+      // Return to initial position
+      handler.absoluteMove({ x: x });
+    }
+  };
+
+  return { ...handler, ...handlers };
+}
+
+// Reference to this cycle, cleaned up at end
+var cycleHandler = null;
+
+// onCycle will set up the global cycleHandler.
+function onCycle() {
+  switch (getProperty("probeToolBehavior")) {
+    case "carveraStock":
+    case "carveraAirStock":
+      cycleHandler = makeraFirmwareCycleHandler(cycle, tool);
+      break;
+    case "carveraCommunity":
+    case "carveraAirCommunity":
+      cycleHandler = communityFirmwareCycleHandler(cycle, tool);
+      break;
+    default:
+      cycleHandler = baseCycleHandler(cycle, tool);
+  }
+  writeComment(`begin ${cycleType} - (${getProperty("probeToolBehavior") ?? "unknown"} firmware - target WCS ${cycleHandler.targetWcs})`);
+}
+
+// onCycleEnd currently just logs.
+function onCycleEnd() {
+  cycleHandler = null;
+  writeComment("end " + cycleType);
+  forceAny();
+}
+
+// Copied from heidenhain.cps, just enough to make the test in onCyclePoint work.
+function getForwardDirection(_section) {
+  if (_section.isMultiAxis()) {
+    return _section.workPlane.forward;
+  }
+  return getRotation().forward;
+}
+
+// onCyclePoint dispatches to a cycle handler based on the cycleType.
+function onCyclePoint(x, y, z) {
+  // Check spindle orientation vs forward direction of this section. We can't, for instance,
+  // have the probe attempt to come in sideways as is done in the default probing strategies sample.
+  if (!isSameDirection(machineConfiguration.getSpindleAxis(), getForwardDirection(currentSection))) {
+    error(localize("direction of " + cycleType + " is not in same direction as spindle axis"));
+    return;
+  }
+
+  if (cycleHandler[cycleType] == null) {
+    warning(localize(cycleType + " has no handler and will be expanded"));
+    expandCyclePoint(x, y, z);
+  }
+
+  cycleHandler.absoluteMove({ x: x, y: y, z: z });
+  cycleHandler[cycleType](x, y, z);
+  cycleHandler.absoluteMove({ x: x, y: y, z: z });
+}
+
+// ====================================================== //
+// ================= END CYCLE HANDLERS ================= //
+// ====================================================== //
+
 
 var pendingRadiusCompensation = -1;
 
