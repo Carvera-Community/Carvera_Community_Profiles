@@ -164,6 +164,7 @@ _**OR DO YOU???**_
 
 > [!NOTE]
 > [This Autodesk forum post](https://forums.autodesk.com/t5/fusion-manufacture/probing-routine-not-updating-offset-correctly/m-p/10954277/highlight/true#M117429) explains how this works.
+> [This NYC CNC provides a quick explainer](https://www.youtube.com/watch?v=CMK5XAxhSr4)
 
 Because Fusion knows about your model geometry, it can do something fancy. It can allow you to probe a random surface, which will adjust the position of the WCS origin relative to where you probed.
 
@@ -192,3 +193,16 @@ You can then take a measurement from a machined surface that is accessible elsew
 ## Testing probing
 
 TODO: info about probe playground and how to run it
+
+## References
+
+For making modications or learning about how probing works, here are some useful references.
+
+* [Autodesk's post-processor training guide](https://cam.autodesk.com/posts/posts/guides/Post%20Processor%20Training%20Guide.pdf) is the canonical reference
+* [API docs](https://cam.autodesk.com/posts/reference/index.html) for the post-processor runtime fills in some blanks not covered in the reference
+* [Autodesk Post Library](https://cam.autodesk.com/hsmposts) contains about 200 example post-processors. To understand what was common I downloaded all 200 with a script. The vast majority of post-processors exhibit high degrees of "copypasta" and use JavaScript idioms from the early 2000s. The post binary actually links a relatively recent SpiderMonkey, allowing you to use features up to and including ECMAScript 2023.
+* [Haas inspection plus reference](https://www.haascnc.com/content/dam/haascnc/en/service/reference/probe/renishaw-inspection-plus-programming-manual---2008.pdf) - explains how their probing macros work, and is useful for understanding what the different Fusion probe operations are supposed to look like
+* [Community Speeds and Feeds doc](https://docs.google.com/spreadsheets/d/1i9jD0Tg6wzTpGYVqhLZMyLFN7pMlSfdfgpQIxDKbojc/edit?gid=700548077#gid=700548077) which contains sheets with gcode and mcode for stock and community firmware.
+* [Linux CNC gcode reference](https://linuxcnc.org/docs/2.6/html/gcode/gcode.html)
+* [Community firmware M460..M465 docs](https://github.com/Carvera-Community/Carvera_Community_Firmware/tree/Dev/tests/TEST_ProbingM460toM465)
+* Autodesk Forum posts [like this one](https://forums.autodesk.com/t5/fusion-manufacture/probing-routine-not-updating-offset-correctly/m-p/10954277/highlight/true#M117429)

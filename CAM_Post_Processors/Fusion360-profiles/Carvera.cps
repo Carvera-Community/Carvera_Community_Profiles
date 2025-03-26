@@ -9,7 +9,6 @@
 
   FORKID {D897E9AA-349A-4011-AA01-06B6CCC181EB}
 */
-
 description = "Makera Carvera Community Post v1.1.17";
 vendor = "Makera";
 vendorUrl = "https://www.makera.com";
@@ -239,7 +238,7 @@ var coolants = [
   {id:COOLANT_OFF, off:9}
 ];
 
-var gFormat = createFormat({prefix:"G", decimals:0});
+var gFormat = createFormat({prefix:"G", decimals:1});
 var mFormat = createFormat({prefix:"M", decimals:0});
 
 var xyzFormat = createFormat({decimals:(unit == MM ? 3 : 4)});
@@ -272,7 +271,6 @@ var gPlaneModal = createModal({onchange:function () {gMotionModal.reset();}}, gF
 var gAbsIncModal = createModal({}, gFormat); // modal group 3 // G90-91
 var gFeedModeModal = createModal({}, gFormat); // modal group 5 // G93-94
 var gUnitModal = createModal({}, gFormat); // modal group 6 // G20-21
-var gCycleModal = createOutputVariable({ control: CONTROL_FORCE }, createFormat({prefix:"G", decimals:1}));
 
 var WARNING_WORK_OFFSET = 0;
 
@@ -280,7 +278,9 @@ var WARNING_WORK_OFFSET = 0;
 var sequenceNumber;
 var forceSpindleSpeed = false;
 var currentWorkOffset;
-var retracted = false; // specifies that the tool has been retracted to the safe plane
+// specifies that the tool has been retracted to the safe plane
+// NB: writeRetract() is what sets this to true
+var retracted = false; 
 
 /**
   Writes the specified block.
@@ -1039,11 +1039,13 @@ function onSection() {
     writeBlock(gPlaneModal.format(17));
 
     if (!machineConfiguration.isHeadConfiguration()) {
-      writeBlock(
-        gAbsIncModal.format(90),
-        gMotionModal.format(0), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y)
-      );
-      writeBlock(gMotionModal.format(0), zOutput.format(initialPosition.z));
+      if(!isFirstOperationProbeZ()) {
+        writeBlock(
+          gAbsIncModal.format(90),
+          gMotionModal.format(0), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y)
+        );
+        writeBlock(gMotionModal.format(0), zOutput.format(initialPosition.z));
+      }
     } else {
       writeBlock(
         gAbsIncModal.format(90),
@@ -1053,7 +1055,7 @@ function onSection() {
         zOutput.format(initialPosition.z)
       );
     }
-  } else {
+  } else {    
     writeBlock(
       gAbsIncModal.format(90),
       gMotionModal.format(0),
@@ -1166,38 +1168,51 @@ function baseCycleHandler(cycle, tool) {
           motion
         ].filter(Boolean);
         
+        forceXYZ();
         x && args.push(xOutput.format(x));
         y && args.push(yOutput.format(y));
         z && args.push(zOutput.format(z));
 
         feedOutput.reset();
-        args.push(feedOutput.format(feed));
+        if (feed) args.push(feedOutput.format(feed));
 
         writeBlock.apply(null, args);
       }
     };
   };
 
+  handler.absoluteRapidMove = probeMove(
+    gFormat.format(0),
+    null,
+    true
+  );
+
   handler.absoluteMove = probeMove(
-    gMotionModal.format(1),
+    gFormat.format(1),
     handler.entryFeed,
     true
   );
 
   handler.relativeMove = probeMove(
-    gCycleModal.format(handler.probeSensorType == "NC" ? 38.3 : 38.5),
+    gFormat.format(1),
+    handler.entryFeed,
+    false
+  );
+
+  handler.safeRelativeMove = probeMove(
+    gFormat.format(handler.probeSensorType == "NC" ? 38.3 : 38.5),
     handler.entryFeed,
     false
   );
 
   handler.measureMoveFast = probeMove(
-    gCycleModal.format(handler.probeSensorType == "NC" ? 38.2 : 38.4),
+    gFormat.format(handler.probeSensorType == "NC" ? 38.2 : 38.4),
     handler.measureFeed*2,
     false
   );
 
   handler.measureMoveSlow = probeMove(
-    gCycleModal.format(handler.probeSensorType == "NC" ? 38.2 : 38.4),
+    gFormat.format(handler.probeSensorType == "NC" ? 38.2 : 38.4),
     handler.measureFeed,
     false
   );
@@ -1280,7 +1295,7 @@ function makeraFirmwareCycleHandler(cycle, tool) {
     const distance = obj[axis];
     writeComment(`begin touchProbe`);
     handler.measureMoveFast({ [axis]: distance });
-    handler.relativeMove({ [axis]: - Math.sign(distance) * tool.diameter * 2 });
+    handler.relativeMove({ [axis]: - Math.sign(distance) * tool.diameter });
     handler.measureMoveSlow({ [axis]: distance });
     writeComment(`end touchProbe`);
   };
@@ -1296,53 +1311,54 @@ function makeraFirmwareCycleHandler(cycle, tool) {
 
   const handlers = {
     "probing-x": (x, y, z) => {
-      const probeDatum = x + handler.approach1 * (cycle.probeClearance + handler.probeRadius);
-      handler.relativeMove({ z: - cycle.depth });
+      const probeDatum = x + handler.approach1 * cycle.probeClearance;
+      handler.safeRelativeMove({ z: - cycle.depth });
       touchProbe({ x: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel) });
       updateWCS(xOutput, probeDatum);
       handler.absoluteMove({ x: x });
     },
     "probing-y": (x, y, z) => {
-      const probeDatum = y + handler.approach1 * (cycle.probeClearance + handler.probeRadius);
-      handler.relativeMove({ z: - cycle.depth });
+      const probeDatum = y + handler.approach1 * cycle.probeClearance;
+      handler.safeRelativeMove({ z: - cycle.depth });
       touchProbe({ y: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel) });
       updateWCS(yOutput, probeDatum);
       handler.absoluteMove({ y: y });
     },
     "probing-z": (x, y, z) => {
       const probeDatum = z - cycle.depth;
-      touchProbe({ z: handler.approach1 * cycle.depth });
+      // Prove all the way down
+      touchProbe({ z: -120 });
       updateWCS(zOutput, probeDatum);
     },
     "probing-xy-outer-corner": (x, y, z) => {
-      const offset = cycle.probeClearance + handler.probeRadius;
+      const offset = cycle.probeClearance;
       const probeDatumX = x + handler.approach1 * offset;
       const probeDatumY = y + handler.approach2 * offset;
 
       // Move to start depth
-      handler.relativeMove({ z: - cycle.depth });
+      handler.safeRelativeMove({ z: - cycle.depth });
 
       // Probing X: move up in Y, probe in X, return to X, return to Y
       writeComment(`probing x surface`)
-      handler.relativeMove({ y: handler.approach2 * offset * 2 });
+      handler.safeRelativeMove({ y: handler.approach2 * offset * 2 });
       touchProbe({ x: handler.approach1 * (offset + cycle.probeOvertravel) });
       updateWCS(xOutput, probeDatumX);
       handler.absoluteMove({ x: x }, { y: y });
 
       // Probing Y: move up in X, probe in Y, return to Y, return to X
       writeComment(`probing y surface`)
-      handler.relativeMove({ x: handler.approach1 * offset * 2 });
+      handler.safeRelativeMove({ x: handler.approach1 * offset * 2 });
       touchProbe({ y: handler.approach2 * (offset + cycle.probeOvertravel) });
       updateWCS(yOutput, probeDatumY);
       handler.absoluteMove({ y: y }, { x: x });
     },
     "probing-xy-inner-corner": (x, y, z) => {
-      const offset = cycle.probeClearance + handler.probeRadius;
+      const offset = cycle.probeClearance;
       const probeDatumX = x + handler.approach1 * offset;
       const probeDatumY = y + handler.approach2 * offset;
 
       // Move to start depth
-      handler.relativeMove({ z: - cycle.depth });
+      handler.safeRelativeMove({ z: - cycle.depth });
 
       writeComment(`probing x surface`)
       touchProbe({ x: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel) });
@@ -1447,7 +1463,7 @@ function communityFirmwareCycleHandler(cycle, tool) {
       // Calculate the expected probe contact point 
       const probeDatum = x + handler.approach1 * (cycle.probeClearance + handler.probeRadius);
 
-      handler.relativeMove({ z: - cycle.depth });
+      handler.safeRelativeMove({ z: - cycle.depth });
 
       straightProbe({
         x: handler.approach1 * (cycle.probeClearance + cycle.probeOvertravel), 
@@ -1501,6 +1517,10 @@ function getForwardDirection(_section) {
   return getRotation().forward;
 }
 
+function isFirstOperationProbeZ() {
+  return isFirstSection() && currentSection.getParameter("operation:probingType") == "probing-z";
+}
+
 // onCyclePoint dispatches to a cycle handler based on the cycleType.
 function onCyclePoint(x, y, z) {
   // Check spindle orientation vs forward direction of this section. We can't, for instance,
@@ -1519,9 +1539,20 @@ function onCyclePoint(x, y, z) {
   const carveraAir = getProperty("probeToolBehavior").startsWith("carveraAir");
 
   if (carveraAir) writeBlock("M494.1");
-  cycleHandler.absoluteMove({ x: x, y: y, z: z });
+
+  // If the first operation is a Z probe, we blocked the X,Y,Z rapid in onSection, so
+  // we need to do the initial X,Y move here. Then the probe will go do its thing.
+  if (isFirstOperationProbeZ()) {
+    cycleHandler.absoluteMove({ x: x, y: y });
+  } else {
+    cycleHandler.absoluteMove({ x: x, y: y, z: z });
+  }
+
+  // Call the handler for this cycleType
   cycleHandler[cycleType](x, y, z);
-  cycleHandler.absoluteMove({ x: x, y: y, z: z });
+
+  // Retract in Z first, then move. 
+  cycleHandler.absoluteRapidMove({z: cycle.clearance}, { x: x, y: y });
   if (carveraAir) writeBlock("M494.2");
 }
 
@@ -1545,7 +1576,12 @@ function onRapid(_x, _y, _z) {
       error(localize("Radius compensation mode cannot be changed at rapid traversal."));
       return;
     }
-    writeBlock(gMotionModal.format(0), x, y, z);
+    if (isFirstOperationProbeZ()) {
+      writeBlock(gMotionModal.format(0), x, y);
+    } else {
+      writeBlock(gMotionModal.format(0), x, y, z);
+    }
+    
     feedOutput.reset();
   }
 }
