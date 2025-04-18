@@ -1,0 +1,82 @@
+{
+    "data": [
+        {
+            "description": "3D touch probe TP06",
+            "expressions": {
+                "tool_bodyLength": "46 mm",
+                "tool_description": "'3D touch probe TP06'",
+                "tool_diameter": "2 mm",
+                "tool_live": "false",
+                "tool_manualToolChange": "true",
+                "tool_number": "7",
+                "tool_productLink": "'https://www.aliexpress.us/item/3256803607054329.html?spm=a2g0o.order_list.order_list_main.70.750e1802dQ2fCm&gatewayAdapt=glo2usa'",
+                "tool_shaftDiameter": "1.57 mm",
+                "tool_vendor": "'Aliexpress'"
+            },
+            "geometry": {
+                "DC": 2,
+                "LB": 46,
+                "SFDM": 1.57,
+                "assemblyGaugeLength": 46
+            },
+            "guid": "a25d0481-e264-4501-8459-5eb86c0fa83b",
+            "post-process": {
+                "break-control": false,
+                "comment": "",
+                "diameter-offset": 7,
+                "length-offset": 7,
+                "live": false,
+                "manual-tool-change": true,
+                "number": 7,
+                "turret": 0
+            },
+            "product-id": "",
+            "product-link": "https://www.aliexpress.us/item/3256803607054329.html?spm=a2g0o.order_list.order_list_main.70.750e1802dQ2fCm&gatewayAdapt=glo2usa",
+            "shaft": {
+                "segments": [
+                    {
+                        "height": 16.381,
+                        "lower-diameter": 1.57,
+                        "upper-diameter": 1.57
+                    },
+                    {
+                        "height": 3,
+                        "lower-diameter": 1.57,
+                        "upper-diameter": 6
+                    },
+                    {
+                        "height": 7,
+                        "lower-diameter": 6,
+                        "upper-diameter": 6
+                    },
+                    {
+                        "height": 20,
+                        "lower-diameter": 33,
+                        "upper-diameter": 33
+                    }
+                ],
+                "type": "shaft"
+            },
+            "start-values": {
+                "presets": [
+                    {
+                        "description": "",
+                        "expressions": {
+                            "tool_feedEntry": "100 mmpm",
+                            "tool_feedProbeMeasure": "100 mmpm"
+                        },
+                        "guid": "61988203-0ce2-43d6-9506-41ef8908bbb4",
+                        "name": "Default preset",
+                        "v_f_leadIn": 100,
+                        "v_f_link": 3000,
+                        "v_f_measure": 100
+                    }
+                ]
+            },
+            "type": "probe",
+            "unit": "millimeters",
+            "vendor": "Aliexpress"
+        }
+    ],
+    "version": 33
+}
