@@ -10,7 +10,7 @@
   FORKID {D897E9AA-349A-4011-AA01-06B6CCC181EB}
 */
 
-description = "Makera Carvera Community Post v1.1.17";
+description = "Makera Carvera Community Post v1.1.18";
 vendor = "Makera";
 vendorUrl = "https://www.makera.com";
 legal = "Copyright (C) 2012-2022 by Autodesk, Inc.";
@@ -58,6 +58,8 @@ tolerance = spatial(0.002, MM);
 //     AutoVacOff           -turns off auto vacuum
 //     LightOn              -turns on the light
 //     LightOff             -turns off the light
+//     ExtOn                -Enables External Control at 100% (M851 S100)
+//     ExtOff               -Disables External Control (M852)
 //     ShrinkA              -Shrinks the A axis with offset 0, so A365 will turn into A5
 
 //
@@ -325,6 +327,10 @@ function onParameter(name, value) {
       writeBlock("M821 (Turn On Light)")
     } else if (String(value).toUpperCase() == "LIGHTOFF"){
       writeBlock("M822 (Turn Off Light)")
+    } else if (String(value).toUpperCase() == "EXTON"){
+      writeBlock("M851 S100 (External Control On 100)")
+    } else if (String(value).toUpperCase() == "EXTOFF"){
+      writeBlock("M852 (External Control Off)")
     } else if (String(value).toUpperCase() == "SHRINKA"){
       writeBlock("G92.4 A0 S0 (shrink the a axis so A365 becomes A5)")
     } else if (String(value).toUpperCase() == "SAFEZ"){
