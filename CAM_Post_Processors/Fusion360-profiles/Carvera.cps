@@ -10,7 +10,7 @@
   FORKID {D897E9AA-349A-4011-AA01-06B6CCC181EB}
 */
 
-description = "Makera Carvera Community Post v1.1.18";
+description = "Makera Carvera Community Post v1.1.20";
 vendor = "Makera";
 vendorUrl = "https://www.makera.com";
 legal = "Copyright (C) 2012-2022 by Autodesk, Inc.";
@@ -465,6 +465,46 @@ function getBodyLength(tool) {
   return tool.bodyLength + tool.holderLength;
 }
 
+function dumpToolInformation() {
+    // dump tool information
+
+      var zRanges = {};
+      if (is3D()) {
+        var numberOfSections = getNumberOfSections();
+        for (var i = 0; i < numberOfSections; ++i) {
+          var section = getSection(i);
+          var zRange = section.getGlobalZRange();
+          var tool = section.getTool();
+          if (zRanges[tool.number]) {
+            zRanges[tool.number].expandToRange(zRange);
+          } else {
+            zRanges[tool.number] = zRange;
+          }
+        }
+      }
+
+      var tools = getToolTable();
+      if (tools.getNumberOfTools() > 0) {
+        for (var i = 0; i < tools.getNumberOfTools(); ++i) {
+          var tool = tools.getTool(i);
+          var comment = "T" + toolFormat.format(tool.number) + "  " +
+            tool.description + "  " +
+            tool.vendor + "  " +
+            tool.productId + "  " +
+            "D=" + xyzFormat.format(tool.diameter) + " " +
+            localize("CR") + "=" + xyzFormat.format(tool.cornerRadius);
+          if ((tool.taperAngle > 0) && (tool.taperAngle < Math.PI)) {
+            comment += " " + localize("TAPER") + "=" + taperFormat.format(tool.taperAngle) + localize("deg");
+          }
+          if (zRanges[tool.number]) {
+            comment += " - " + localize("ZMIN") + "=" + xyzFormat.format(zRanges[tool.number].getMinimum());
+          }
+          comment += " - " + getToolTypeName(tool.type);
+          writeComment(comment);
+        }
+      }
+}
+
 function defineMachine() {
   if (false) { // note: setup your machine here
     var aAxis = createAxis({coordinate:0, table:true, axis:[1, 0, 0], cyclic:true, tcp:false});
@@ -559,41 +599,7 @@ function onOpen() {
 
   // dump tool information
   if (getProperty("writeTools")) {
-    var zRanges = {};
-    if (is3D()) {
-      var numberOfSections = getNumberOfSections();
-      for (var i = 0; i < numberOfSections; ++i) {
-        var section = getSection(i);
-        var zRange = section.getGlobalZRange();
-        var tool = section.getTool();
-        if (zRanges[tool.number]) {
-          zRanges[tool.number].expandToRange(zRange);
-        } else {
-          zRanges[tool.number] = zRange;
-        }
-      }
-    }
-
-    var tools = getToolTable();
-    if (tools.getNumberOfTools() > 0) {
-      for (var i = 0; i < tools.getNumberOfTools(); ++i) {
-        var tool = tools.getTool(i);
-        var comment = "T" + toolFormat.format(tool.number) + "  " +
-          tool.description + "  " +
-          tool.vendor + "  " +
-          tool.productId + "  " +
-          "D=" + xyzFormat.format(tool.diameter) + " " +
-          localize("CR") + "=" + xyzFormat.format(tool.cornerRadius);
-        if ((tool.taperAngle > 0) && (tool.taperAngle < Math.PI)) {
-          comment += " " + localize("TAPER") + "=" + taperFormat.format(tool.taperAngle) + localize("deg");
-        }
-        if (zRanges[tool.number]) {
-          comment += " - " + localize("ZMIN") + "=" + xyzFormat.format(zRanges[tool.number].getMinimum());
-        }
-        comment += " - " + getToolTypeName(tool.type);
-        writeComment(comment);
-      }
-    }
+    dumpToolInformation();
   }
 
   if ((getNumberOfSections() > 0) && (getSection(0).workOffset == 0)) {
@@ -879,6 +885,11 @@ function onSection() {
   }
 
   if (insertToolCall) {
+
+    if(getProperty("splitFile") == "toolpath" && getProperty("splitFileHeader")) {
+      dumpToolInformation();
+    }
+
     setCoolant(COOLANT_OFF);
 
     if (tool.number > numberOfToolSlots) {
