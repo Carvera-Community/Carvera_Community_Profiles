@@ -1405,7 +1405,6 @@ function calculateWCS(offset) {
 // your implementations.
 function baseCycleHandler(cycle, tool) {
   var handler = {
-    probeRadius: tool.diameter / 2,
     // Set in the UI as "Measure Feedrate" on the Tool tab.
     // Note from Fusion docs: "If the probe is set up to perform two touches,
     // the first touch is at the Lead-In Feedrate and the second touch is at
@@ -1415,22 +1414,6 @@ function baseCycleHandler(cycle, tool) {
     linkFeed: currentSection.getParameter("operation:tool_feedProbeLink"),
     // Set in the UI as "Lead-In Feedrate", on the Tool tab.
     entryFeed: currentSection.getParameter("operation:tool_feedEntry"),
-    // Shown in the UI as "WCS to be updated". This cannot be set directly in
-    // the operation dialog under the Actions tab, it is derived from the
-    // WCS of the setup that the operation is part of.
-    drivingWcs: currentSection.workOffset,
-    // Set in the UI as "WCS" on the Actions tab.
-    // This is the WCS that will be updated with the probe results.
-    // "Override Driving WCS" checkbox in the Actions tab must be checked
-    // for this option to be set and to have any effect.
-    targetWcs: currentSection.probeWorkOffset,
-    // Set in the UI by checking the "Override Driving WCS" checkbox in the Actions tab.
-    updateDrivingWCS: getParameter("operation:probe_overrideWorkOffset"),
-    approach1: cycle.approach1 == "positive" ? 1 : -1,
-    approach2: cycle.approach2 == "positive" ? 1 : -1,
-    // The type of sensor in use, normally open (NO), or normally closed (NC).
-    // This is configured in the post processor parameters.
-    probeSensorType: getProperty("probeSensorType"),
   };
 
   // probeMove constructs functions that move the probe at a specified rate in
@@ -1467,172 +1450,206 @@ function baseCycleHandler(cycle, tool) {
 
   // Relative moves without probing.
   handler.relativeMove = probeMove(gFormat.format(1), handler.entryFeed, false);
-  handler.safeRelativeMove = probeMove(
-    gFormat.format(handler.probeSensorType == "NC" ? 38.5 : 38.3),
-    handler.entryFeed,
-    false
-  );
 
-  // Relative moves with probing.
-  handler.measureMoveFast = probeMove(
-    gFormat.format(handler.probeSensorType == "NC" ? 38.4 : 38.2),
-    handler.measureFeed * 2,
-    false
-  );
-  handler.measureMoveSlow = probeMove(
-    gFormat.format(handler.probeSensorType == "NC" ? 38.4 : 38.2),
-    handler.measureFeed,
-    false
-  );
-
-  // updateWCS updates the WCS for this probe using the axis and WCS offset provided,
-  // but only if updateDrivingWCS is true.
-  handler.updateWCS = (axis, offset) => {
-    if (!handler.updateDrivingWCS) return;
-
-    writeBlock(
-      gFormat.format(10),
-      `L20 P${handler.targetWcs}`,
-      axis.format(offset)
-    );
-  };
-
-  handler.extractAxisAndDistance = (options) => {
-    const axis = ["x", "y", "z"].find(
-      (axis) =>
-        Object.keys(options).includes(axis) && options[axis] !== undefined
-    );
-
-    if (!axis) {
-      error(localize("Error determining axis for probing operation."));
-      return null;
-    }
-
-    const distance = options[axis];
-    if (!distance || isNaN(distance)) {
-      error(localize("Invalid distance for probing operation."));
-      return null;
-    }
-
-    return { axis, distance };
-  };
-
-  // touchProbe measures on the provided axis in the direction indicated by the sign of the value.
-  // It double-taps and leaves the probe touching the material after the second touch.
-  handler.touchProbe = (options) => {
-    const { axis, distance } = handler.extractAxisAndDistance(options);
-
-    handler.measureMoveFast({ [axis]: distance });
-    handler.relativeMove({ [axis]: -Math.sign(distance) * tool.diameter });
-    handler.measureMoveSlow({
-      [axis]: Math.sign(distance) * tool.diameter * 2,
-    });
-  };
-
-  // touchUpdateRetract probes using the handler.touchProbe function,
-  // then updates either the WCS or the provided variable,
-  // and finally retracts the probe away from the surface
-  // by the specified retract distance.
-  // If a retract distance is not specified, it defaults to the approach
-  // distance for the cycle.
-  handler.touchUpdateRetract = (options) => {
-    handler.touchProbe(options);
-
-    const currentWCSPositions = {
-      x: "#5041",
-      y: "#5042",
-      z: "#5043",
+  if (isProbeOperation()) {
+    handler = {
+      ...handler,
+      probeRadius: tool.diameter / 2,
+      // Shown in the UI as "WCS to be updated". This cannot be set directly in
+      // the operation dialog under the Actions tab, it is derived from the
+      // WCS of the setup that the operation is part of.
+      drivingWcs: currentSection.workOffset,
+      // Set in the UI as "WCS" on the Actions tab.
+      // This is the WCS that will be updated with the probe results.
+      // "Override Driving WCS" checkbox in the Actions tab must be checked
+      // for this option to be set and to have any effect.
+      targetWcs: currentSection.probeWorkOffset,
+      // Set in the UI by checking the "Override Driving WCS" checkbox in the Actions tab.
+      updateDrivingWCS: getParameter("operation:probe_overrideWorkOffset"),
+      approach1: cycle.approach1 == "positive" ? 1 : -1,
+      approach2: cycle.approach2 == "positive" ? 1 : -1,
+      // The type of sensor in use, normally open (NO), or normally closed (NC).
+      // This is configured in the post processor parameters.
+      probeSensorType: getProperty("probeSensorType"),
     };
 
-    const { axis, distance } = handler.extractAxisAndDistance(options);
+    handler.safeRelativeMove = probeMove(
+      gFormat.format(handler.probeSensorType == "NC" ? 38.5 : 38.3),
+      handler.entryFeed,
+      false
+    );
 
-    if (Object.keys(options).includes("variable")) {
-      // If a variable is provided, update it with the probe result.
-      const variable = options.variable.replace("#", "");
-      const sign = distance < 0 ? "-" : "+";
+    // Relative moves with probing.
+    handler.measureMoveFast = probeMove(
+      gFormat.format(handler.probeSensorType == "NC" ? 38.4 : 38.2),
+      handler.measureFeed * 2,
+      false
+    );
+    handler.measureMoveSlow = probeMove(
+      gFormat.format(handler.probeSensorType == "NC" ? 38.4 : 38.2),
+      handler.measureFeed,
+      false
+    );
+
+    // updateWCS updates the WCS for this probe using the axis and WCS offset provided,
+    // but only if updateDrivingWCS is true.
+    handler.updateWCS = (axis, offset) => {
+      if (!handler.updateDrivingWCS) return;
+
       writeBlock(
-        `#${variable} = [${currentWCSPositions[axis]} ${sign} ${handler.probeRadius}]`
+        gFormat.format(10),
+        `L20 P${handler.targetWcs}`,
+        axis.format(offset)
       );
-    } else {
-      // Otherwise, update the WCS for the current axis.
-      const output = [xOutput, yOutput, zOutput].find((o) =>
-        o.format(0).startsWith(axis.toUpperCase())
+    };
+
+    handler.extractAxisAndDistance = (options) => {
+      const axis = ["x", "y", "z"].find(
+        (axis) =>
+          Object.keys(options).includes(axis) && options[axis] !== undefined
       );
 
-      handler.updateWCS(output, -Math.sign(distance) * handler.probeRadius);
-    }
+      if (!axis) {
+        error(localize("Error determining axis for probing operation."));
+        return null;
+      }
 
-    // Retract away from the surface.
-    const retractDistance =
-      options.retractDistance ||
-      options.approachDistance ||
-      cycle.probeClearance ||
-      tool.diameter ||
-      2;
+      const distance = options[axis];
+      if (!distance || isNaN(distance)) {
+        error(localize("Invalid distance for probing operation."));
+        return null;
+      }
 
-    handler.relativeMove({
-      [axis]: -Math.sign(distance) * retractDistance,
-    });
-  };
+      return { axis, distance };
+    };
 
-  var probingCycleTypes = [
-    "probing-x",
-    "probing-y",
-    "probing-z",
-    "probing-x-wall",
-    "probing-y-wall",
-    "probing-x-channel",
-    "probing-y-channel",
-    "probing-x-channel-with-island",
-    "probing-y-channel-with-island",
-    "probing-xy-circular-boss",
-    "probing-xy-circular-partial-boss",
-    "probing-xy-circular-hole",
-    "probing-xy-circular-partial-hole",
-    "probing-xy-circular-hole-with-island",
-    "probing-xy-circular-partial-hole-with-island",
-    "probing-xy-rectangular-boss",
-    "probing-xy-rectangular-hole",
-    "probing-xy-rectangular-hole-with-island",
-    "probing-xy-inner-corner",
-    "probing-xy-outer-corner",
-    "probing-x-plane-angle",
-    "probing-y-plane-angle",
-  ];
+    // touchProbe measures on the provided axis in the direction indicated by the sign of the value.
+    // It double-taps and leaves the probe touching the material after the second touch.
+    handler.touchProbe = (options) => {
+      const { axis, distance } = handler.extractAxisAndDistance(options);
+
+      handler.measureMoveFast({ [axis]: distance });
+      handler.relativeMove({ [axis]: -Math.sign(distance) * tool.diameter });
+      handler.measureMoveSlow({
+        [axis]: Math.sign(distance) * tool.diameter * 2,
+      });
+    };
+
+    // touchUpdateRetract probes using the handler.touchProbe function,
+    // then updates either the WCS or the provided variable,
+    // and finally retracts the probe away from the surface
+    // by the specified retract distance.
+    // If a retract distance is not specified, it defaults to the approach
+    // distance for the cycle.
+    handler.touchUpdateRetract = (options) => {
+      handler.touchProbe(options);
+
+      const currentWCSPositions = {
+        x: "#5041",
+        y: "#5042",
+        z: "#5043",
+      };
+
+      const { axis, distance } = handler.extractAxisAndDistance(options);
+
+      if (Object.keys(options).includes("variable")) {
+        // If a variable is provided, update it with the probe result.
+        const variable = options.variable.replace("#", "");
+        const sign = distance < 0 ? "-" : "+";
+        writeBlock(
+          `#${variable} = [${currentWCSPositions[axis]} ${sign} ${handler.probeRadius}]`
+        );
+      } else {
+        // Otherwise, update the WCS for the current axis.
+        const output = [xOutput, yOutput, zOutput].find((o) =>
+          o.format(0).startsWith(axis.toUpperCase())
+        );
+
+        handler.updateWCS(output, -Math.sign(distance) * handler.probeRadius);
+      }
+
+      // Retract away from the surface.
+      const retractDistance =
+        options.retractDistance ||
+        options.approachDistance ||
+        cycle.probeClearance ||
+        tool.diameter ||
+        2;
+
+      handler.relativeMove({
+        [axis]: -Math.sign(distance) * retractDistance,
+      });
+    };
+  }
+
+  if (isProbeOperation()) {
+    handler[cycleType] = (x, y, z) => {
+      error(localize(`Probing cycle '${v}' is not supported by Carvera.`));
+    };
+  }
+
+  // var probingCycleTypes = [
+  //   "probing-x",
+  //   "probing-y",
+  //   "probing-z",
+  //   "probing-x-wall",
+  //   "probing-y-wall",
+  //   "probing-x-channel",
+  //   "probing-y-channel",
+  //   "probing-x-channel-with-island",
+  //   "probing-y-channel-with-island",
+  //   "probing-xy-circular-boss",
+  //   "probing-xy-circular-partial-boss",
+  //   "probing-xy-circular-hole",
+  //   "probing-xy-circular-partial-hole",
+  //   "probing-xy-circular-hole-with-island",
+  //   "probing-xy-circular-partial-hole-with-island",
+  //   "probing-xy-rectangular-boss",
+  //   "probing-xy-rectangular-hole",
+  //   "probing-xy-rectangular-hole-with-island",
+  //   "probing-xy-inner-corner",
+  //   "probing-xy-outer-corner",
+  //   "probing-x-plane-angle",
+  //   "probing-y-plane-angle",
+  // ];
 
   // If a probe cycle is not implemented and falls back to the baseCycleHandler,
   // we throw an error.
-  probingCycleTypes.forEach(function (v) {
-    handler[v] = (x, y, z) => {
-      error(localize(`Probing cycle '${v}' is not supported by Carvera.`));
-    };
-  });
+  // probingCycleTypes.forEach(function (v) {
+  //   handler[v] = (x, y, z) => {
+  //     error(localize(`Probing cycle '${v}' is not supported by Carvera.`));
+  //   };
+  // });
 
-  var drillingCycleTypes = [
-    "drilling",
-    "counter-boring",
-    "chip-breaking",
-    "deep-drilling",
-    "break-through-drilling",
-    "gun-drilling",
-    "tapping",
-    "left-tapping",
-    "right-tapping",
-    "tapping-with-chip-breakinreaming",
-    "boring",
-    "stop-boring",
-    "fine-boring",
-    "back-boring",
-    "circular-pocket-milling",
-    "thread-milling",
-  ];
+  handler.expandCyclePoint = (x, y, z) => {
+    expandCyclePoint(x, y, z);
+  };
 
-  // For drilling cycles we just call expandCyclePoint
-  drillingCycleTypes.forEach(function (v) {
-    handler[v] = function (x, y, z) {
-      expandCyclePoint(x, y, z);
-    };
-  });
+  // var drillingCycleTypes = [
+  //   "drilling",
+  //   "counter-boring",
+  //   "chip-breaking",
+  //   "deep-drilling",
+  //   "break-through-drilling",
+  //   "gun-drilling",
+  //   "tapping",
+  //   "left-tapping",
+  //   "right-tapping",
+  //   "tapping-with-chip-breakinreaming",
+  //   "boring",
+  //   "stop-boring",
+  //   "fine-boring",
+  //   "back-boring",
+  //   "circular-pocket-milling",
+  //   "thread-milling",
+  // ];
+
+  // // For drilling cycles we just call expandCyclePoint
+  // drillingCycleTypes.forEach(function (v) {
+  //   handler[v] = function (x, y, z) {
+  //     expandCyclePoint(x, y, z);
+  //   };
+  // });
 
   return handler;
 }
@@ -2089,20 +2106,28 @@ var cycleHandler = null;
 
 // onCycle will set up the global cycleHandler.
 function onCycle() {
-  if (getProperty("firmwareType") == "community") {
-    cycleHandler = communityFirmwareCycleHandler(cycle, tool);
+  // Current cycle is not a probing cycle, so we simply provide a handler
+  // that expands cycle points.
+  if (!isProbeOperation()) {
+    cycleHandler = baseCycleHandler(cycle, tool);
+    cycleHandler[cycleType] = cycleHandler.expandCyclePoint;
   } else {
-    cycleHandler = makeraFirmwareCycleHandler(cycle, tool);
-  }
+    // Current cycle is a probing cycle.
+    if (getProperty("firmwareType") == "community") {
+      cycleHandler = communityFirmwareCycleHandler(cycle, tool);
+    } else {
+      cycleHandler = makeraFirmwareCycleHandler(cycle, tool);
+    }
 
-  writeComment(`Begin ${cycleType}`);
-  writeComment(
-    `WCS used during probing: G${calculateWCS(cycleHandler.drivingWcs)}`
-  );
-  if (cycleHandler.updateDrivingWCS) {
+    writeComment(`Begin ${cycleType}`);
     writeComment(
-      `WCS that will be updated: G${calculateWCS(cycleHandler.targetWcs)}`
+      `WCS used during probing: G${calculateWCS(cycleHandler.drivingWcs)}`
     );
+    if (cycleHandler.updateDrivingWCS) {
+      writeComment(
+        `WCS that will be updated: G${calculateWCS(cycleHandler.targetWcs)}`
+      );
+    }
   }
 }
 
