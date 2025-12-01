@@ -1,22 +1,16 @@
-[POST_VERSION] #DO NOT MOVE OR ALTER THIS LINE# V23.00 P0 E1 W23.00 T1578671209 M23.00 I0 O1
-scncpost_revision     := "23.85" # Internal revision number for use by CNC Software only.  Please do not change this number.
-scustpost_revision    := "0"  # Revision number for use by Resellers or customers.
-# Post Name           : MPFAN.pst
+[POST_VERSION] #DO NOT MOVE OR ALTER THIS LINE# V28.00 P0 E1 W28.00 T1744895149 M28.00 I0 O1
+
+scustpost_revision    := "25"  # Revision number for use by Resellers or customers.
+# Post Name           : CarveraPostProcessor.pst
 # Product             : Mill
-# Machine Name        : Generic
-# Control Name        : Fanuc
-# Description         : Generic 4 Axis Mill Post
+# Machine Name        : Carvera All Types
+# Control Name        : Makera
+# Description         : 4 axis capable post processor
 # 4-axis/Axis subs.   : Yes
 # 5-axis              : No
-# Subprograms         : Yes
+# Subprograms         : No
 # Executable          : mp.dll
 #
-# WARNING: THIS POST IS GENERIC AND IS INTENDED FOR MODIFICATION TO
-# THE MACHINE TOOL REQUIREMENTS AND PERSONAL PREFERENCE.
-#
-# THIS POST REQUIRES A VALID 3 OR 4 AXIS MACHINE DEFINITION.
-# YOU WILL RECEIVE AN ERROR MESSAGE IF MORE THAN ONE ROTARY AXIS IS DETECTED IN
-# THE ACTIVE AXIS COMBINATION WITH READ_MD SET TO YES.
 #
 # Associated File List$
 #
@@ -86,8 +80,25 @@ scustpost_revision    := "0"  # Revision number for use by Resellers or customer
 # CNC 03/19/19  -  (22.84) Added plane output at tool change
 # CNC 06/27/19  -  (22.85) Corrected incorrect feed rate output
 # CNC 01/10/20  -  (23.85) Initial post update for Mastercam 2021
-#
-#endregion
+# CNC 07/02/20  -  (23.86) Corrected DPM feed calculation
+# CNC 07/15/20  -  (23.87) Corrected an issue with unbroken rapid rotary motion to avoid a potential endless loop
+# CNC 01/11/21  -  (24.87) Initial post update for Mastercam 2022
+# CNC 01/29/21  -  (24.88) Updated sample custom drill cycle
+# CNC 02/10/21  -  (24.89) Corrected an issue with incremental moves being processed twice
+# CNC 06/09/21  -  (24.90) Added abs/inc to ppos_cax_lin to output when using incremental sub programs
+# CNC 10/13/21  -  (24.91) Changed rot_type initialization to 0 for signed continuous
+# CNC 04/25/22  -  (25.91) Initial post update for Mastercam 2023
+# CNC 08/24/22  -  (25.92) D-49417 Changed order of pcan/pspindchng in pdwl_spd$
+# CNC 08/10/22  -  (25.93) Added sgdrlref to "_2" drilling post blocks to output G98/G99 as needed for subsequent holes
+# CNC 11/18/22  -  (25.94) D-45876 Fanuc Mill post not enabling rotary brake for drilling.
+# CNC 02/02/23  -  (25.95) D-48974 Fixed missing output in subroutines.
+# CNC 05/18/23  -  (26.95) Initial post update for Mastercam 2024
+# CNC 07/19/23  -  (26.96) S-108183 - Add Mastercam Probing support
+# CNC 02/15/24  -  (27.00) Initial post update for Mastercam 2025
+# CNC 06/05/24  -  (27.01) Modified pcanceldc$ to force gcode output after drill cycle is cancelled (after the G80)
+# CNC 02/19/25  -  (28.00) Initial post update for Mastercam 2026
+
+#endregion Revision log
 
 #region Features, notes
 # --------------------------------------------------------------------------
@@ -144,7 +155,7 @@ scustpost_revision    := "0"  # Revision number for use by Resellers or customer
 #        1 = incremental
 #
 # mi3 - Select G28 or G30 reference point return.
-#        0 = G28, 1 = G30
+#        0 = G28, 1 = G28
 #
 # mi4 - mi10 (NOT USED)
 #
@@ -241,6 +252,7 @@ two          := 2
 three        := 3
 four         := 4
 five         := 5
+six          := 6
 c9k          := 9999
 
 bug4$        : 1     #Debug output with the tilde '~'.
@@ -267,7 +279,7 @@ tooltable$   : 3     #Pre-read, call the pwrtt postblock
 # --------------------------------------------------------------------------
 # General Output Settings
 # --------------------------------------------------------------------------
-maxfeedpm    : 500   #SET_BY_MD Limit for feed in inch/min
+maxfeedpm    : 3000   #SET_BY_MD Limit for feed in inch/min
 ltol_m       : 0.05  #Length tolerance for arccheck, metric
 vtol_m       : 0.0025#System tolerance, metric
 maxfeedpm_m  : 10000 #SET_BY_MD Limit for feed in mm/min
@@ -278,10 +290,10 @@ stagetltype  : 1     #0 = Do not stage 1st tool
                      #1 = Stage 1st tool at last tool change
                      #2 = Stage 1st tool at end of file (peof)
 use_gear     : 0     #Output gear selection code, 0=no, 1=yes
-min_speed    : 7000  #SET_BY_MD Minimum spindle speed
-progname$    : 0     #Use uppercase for program name (sprogname)
+min_speed    : 50    #SET_BY_MD Minimum spindle speed
+progname$    : 1     #Use uppercase for program name (sprogname)
 prog_stop    : 0     #Program stop at toolchange: 0=None, 1=M01, 2 = M00
-tool_info    : 2     #Output tooltable information?
+tool_info    : 3     #Output tooltable information?
                      #0 = Off - Do not output any tool comments or tooltable
                      #1 = Tool comments only
                      #2 = Tooltable in header - no tool comments at T/C
@@ -302,7 +314,7 @@ arctypeyz$   : 2     #Arc center type YZ plane 1=abs, 2=St-Ctr, 3=Ctr-St, 4=unsi
 # --------------------------------------------------------------------------
 read_md      : no$   #Set rotary axis switches by reading Machine Definition?
 vmc          : 1     #SET_BY_MD 0 = Horizontal Machine, 1 = Vertical Mill
-rot_on_x     : 0     #SET_BY_MD Default Rotary Axis Orientation
+rot_on_x     : 1     #SET_BY_MD Default Rotary Axis Orientation
                      #0 = Off, 1 = About X, 2 = About Y, 3 = About Z
 rot_ccw_pos  : 0     #SET_BY_MD Axis signed dir, 0 = CW positive, 1 = CCW positive
 index        : 0     #SET_BY_MD Use index positioning, 0 = Full Rotary, 1 = Index only
@@ -315,25 +327,40 @@ frc_cinit    : yes$  #Force C axis reset at toolchange
 ctol         : 225   #Tolerance in deg. before rev flag changes
 ixtol        : 0.01  #Tolerance in deg. for index error
 frdegstp     : 10    #Step limit for rotary feed in deg/min
-rot_type     : 1     #SET_BY_MD Rotary type - 0=signed continuous, 1=signed absolute, 2=shortest direction
+rot_type     : 0     #SET_BY_MD Rotary type - 0=signed continuous, 1=signed absolute, 2=shortest direction
 force_index  : no$   #Force rotary output to index mode when tool plane positioning with a full rotary
 use_rotmcode : 0     #Output M-Code for Axis direction (sindx_mc)
                      #0 = Signed direction (only valid when rot_type = 1)
                      #1 = M-Code for direction
 toolismetric       : 0     #flag that tool is metric
-tap_feedtype       : 0     #0 = Units Per Minute (G94)
+tap_feedtype       : 1     #0 = Units Per Minute (G94)
                            #1 = Units Per Revolution (G95)
 
 #Rotary Axis Label options
 use_md_rot_label : no$  #Use rotary axis label from machine def? - Leave set to 'no' until available
-srot_x       :"A"   #Label applied to rotary axis movement - rotating about X axis - used when use_md_rot_label = no
-srot_y       :"B"   #Label applied to rotary axis movement - rotating about Y axis - used when use_md_rot_label = no
-srot_z       :"C"   #Label applied to rotary axis movement - rotating about Z axis - used when use_md_rot_label = no
+srot_x       : "A"   #Label applied to rotary axis movement - rotating about X axis - used when use_md_rot_label = no
+srot_y       : "B"   #Label applied to rotary axis movement - rotating about Y axis - used when use_md_rot_label = no
+srot_z       : "C"   #Label applied to rotary axis movement - rotating about Z axis - used when use_md_rot_label = no
 sminus       : "-"   #Address for the rotary axis (signed motion)
 
 #Axis locking
 use_rot_lock : no$  #Use rotary axis lock/unlock codes
 
+#endregion
+
+#region Define categories
+#Define operations to include in the category Drilling
+drilling =
+      (
+      tool_op$ = 2   |  # Drill
+      tool_op$ = 28  |  # 5-axis drilling
+      tool_op$ = 37  |  # Non-associative drilling
+      tool_op$ = 104 |  # Solid drill control operation
+      tool_op$ = 136 |  # FBM drill control operation
+      tool_op$ = 306    # Block drill
+      )
+
+rot_changed = fsg(vtoolx$ = prv_vtoolx$ & vtooly$ = prv_vtooly$, no$, yes$)
 #endregion
 
 #region Common user-defined variable initializations (not switches!)
@@ -371,6 +398,7 @@ mr_rt_actv   : 0     #Flag to indicate if G51/G68 is active
 mr_rt_rst    : 0     #Flag to restore abs/inc when G51/G68 is active
 rt_csav      : 0     #C saved value
 end_sub_mny  : 0     #Many tool setting captured at transform sub end
+sub_is_active  : 0     #Flag to indicate if we are writing code inside a sub (i.e after writing the OXXXXX)
 
 #Rotary/Index variables
 csav         : 0     #C saved value
@@ -539,7 +567,7 @@ fstrsel sg20 met_tool$ smetric 2 -1
 # --------------------------------------------------------------------------
 #Select reference return code
 sg28    : "G28"      #First reference point return
-sg30    : "G30"      #Second reference point return
+sg30    : "G28"      #Second reference point return
 sg28ref : ""         #Target string
 
 fstrsel sg28 mi3$ sg28ref 2 -1
@@ -880,7 +908,7 @@ pheader$         #Call before start of file
       else, "%", e$
       sav_spc = spaces$
       spaces$ = 0
-     #*progno$, sopen_prn, sprogname$, sclose_prn, e$
+      *progno$, sopen_prn, sprogname$, sclose_prn, e$
       #sopen_prn, "PROGRAM NAME - ", sprogname$, sclose_prn, e$
       sopen_prn, "DATE=DD-MM-YY - ", date$, " TIME=HH:MM - ", time$, sclose_prn, e$ #Date and time output Ex. 12-02-05 15:52
       #sopen_prn, "DATE - ", month$, "-", day$, "-", year$, sclose_prn, e$  #Date output as month,day,year - Ex. 02-12-05
@@ -891,9 +919,9 @@ pheader$         #Call before start of file
       smcname$ = ucase(smcname$)
       stck_matl$ = ucase(stck_matl$)
       snamenc$ = ucase(snamenc$)
-      #sopen_prn, "MCAM FILE - ", *smcpath$, *smcname$, *smcext$, sclose_prn, e$
-      #sopen_prn, "NC FILE - ", *spathnc$, *snamenc$, *sextnc$, sclose_prn, e$
-      #sopen_prn, "MATERIAL - ", *stck_matl$, sclose_prn, e$
+      sopen_prn, "MCAM FILE - ", *smcpath$, *smcname$, *smcext$, sclose_prn, e$
+      sopen_prn, "NC FILE - ", *spathnc$, *snamenc$, *sextnc$, sclose_prn, e$
+      sopen_prn, "MATERIAL - ", *stck_matl$, sclose_prn, e$
       spaces$ = sav_spc
 #endregion
 
@@ -906,6 +934,7 @@ psof$            #Start of file for non-zero tool number
       probe_head$
       pcuttype
       toolchng = one
+      probing_sof
       if ntools$ = one,
         [
         #skip single tool outputs, stagetool must be on
@@ -914,42 +943,42 @@ psof$            #Start of file for non-zero tool number
         ]
       pbld, n$, *smetric, e$
       if convert_rpd$, pconvert_rpd
-      pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgplane,  *sgabsinc, [if gcode$, *feed], e$
-	  #pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgabsinc, [if gcode$, *feed], e$
+      pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgplane, scc0, sg49, sg80, *sgabsinc, [if gcode$, *feed], e$
       inhibit_probe$
       sav_absinc = absinc$
       if mi1$ <= one, #Work coordinate system
         [
         absinc$ = one
-        #pfbld, n$, sgabsinc, *sg28ref, "Z0.", e$
-		#pfbld, n$, "G53", "G00", "Z0.", e$
-        #pfbld, n$, "G00", "X0.", "Y0.", e$
+        pfbld, n$, sgabsinc, *sg28ref, "Z0.", e$
+        pfbld, n$, *sg28ref, "X0.", "Y0.", e$
         pfbld, n$, sg92, *xh$, *yh$, *zh$, e$
         absinc$ = sav_absinc
         ]
       pcom_moveb
       pcheckaxis
       uninhibit_probe$
+      probing_before_toolchange
       c_mmlt$ #Multiple tool subprogram call
       ptoolcomment
       comment$
       pcan
       pbld, n$, *t$, sm06, e$
       pindex
+      probing_after_toolchange
       if mi1$ > one, absinc$ = zero
       if use_rot_lock & (cuttype <> zero | (index = zero & prv_cabs <> fmtrnd(cabs))), prot_unlock
       if convert_rpd$, pconvert_rpd
-	  pbld, n$,  [if nextdc$ <> 7, *speed, *spindle], pgear, [if gcode$, *feed], strcantext, e$
-      pcan1, pbld, n$, [if gcode$, *sgfeed], *sgabsinc,*sgplane, pwcs, e$
-      pbld, n$, *sgcode,pfxout, pfyout, pfcout,e$
-      if use_rot_lock & cuttype = zero, prot_lock
+      pcan1, pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgabsinc, pwcs, pfxout, pfyout, pfcout,
+        [if nextdc$ <> 7, *speed, *spindle], pgear, [if gcode$, *feed], strcantext, e$
+      if use_rot_lock & (cuttype = zero | drilling) & cutpos$ <> six, prot_lock
       result = force(feed)  # Force output of feed next time it's called for output
-      #pbld, n$, sg43, *tlngno$, pfzout, pscool, pstagetool, e$
+      pbld, n$, sg43, *tlngno$, pfzout, pscool, pstagetool, e$
       absinc$ = sav_absinc
       pbld, n$, sgabsinc, e$
       pcom_movea
       toolchng = zero
       c_msng$ #Single tool subprogram call
+      probing_after_coordinates
 
 #endregion
 
@@ -961,6 +990,7 @@ ptlchg0$         #Call from NCI null tool change (tool number repeats)
       toolchng0 = one
       pcom_moveb
       pcheckaxis
+      probing_before_toolchange
       !op_id$  # Added with probing support
       inhibit_probe$
       c_mmlt$ #Multiple tool subprogram call
@@ -970,23 +1000,25 @@ ptlchg0$         #Call from NCI null tool change (tool number repeats)
       pbld, n$, sgplane, e$
       pspindchng
       pbld, n$, pscool, e$
+      probing_after_toolchange
       if use_rot_lock & (cuttype <> zero | (index = zero & prv_cabs <> fmtrnd(cabs))), prot_unlock
       if mi1$ > one & workofs$ <> prv_workofs$,
         [
         sav_absinc = absinc$
         absinc$ = zero
-        pbld, n$, sgabsinc, pwcs,e$ 	
-        pbld, n$,pfxout, pfyout, pfzout, pfcout, e$
+        pbld, n$, sgabsinc, pwcs, pfxout, pfyout, pfzout, pfcout, e$
+        pe_inc_calc
         ps_inc_calc
         absinc$ = sav_absinc
         ]
       if cuttype = zero, ppos_cax_lin
       if gcode$ = one, plinout
       else, prapidout
-      if use_rot_lock & cuttype = zero, prot_lock
+      if use_rot_lock & (cuttype = zero | drilling) & cutpos$ <> six, prot_lock
       pcom_movea
       toolchng0 = zero
       c_msng$ #Single tool subprogram call
+      probing_after_coordinates
       !xnci$, !ynci$, !znci$
 
 #endregion
@@ -997,10 +1029,11 @@ ptlchg$          #Tool change
       toolchng = one
       if mi1$ = one, #Work coordinate system
         [
-        #pfbld, n$, *sg28ref, "X0.", "Y0.", e$
-        #pfbld, n$, sg92, *xh$, *yh$, *zh$, e$
+        pfbld, n$, *sg28ref, "X0.", "Y0.", e$
+        pfbld, n$, sg92, *xh$, *yh$, *zh$, e$
         ]
       inhibit_probe$
+      probing_before_toolchange
       if prog_stop = 1, pbld, n$, *sm01, e$
       if prog_stop = 2, pbld, n$, *sm00, e$
       pcom_moveb
@@ -1012,23 +1045,21 @@ ptlchg$          #Tool change
       result = newfs(15, feed)  #Reset the output format for 'feed'
       pbld, n$, *t$, sm06, e$
       pindex
+      probing_after_toolchange
       sav_absinc = absinc$
       if mi1$ > one, absinc$ = zero
       if use_rot_lock & (cuttype <> zero | (index = zero & prv_cabs <> fmtrnd(cabs))), prot_unlock
       if convert_rpd$, pconvert_rpd
-      
-	  pbld, n$,  [if nextdc$ <> 7, *speed, *spindle], pgear, [if gcode$, *feed], strcantext, e$
-	  pcan1, pbld, n$, [if gcode$, *sgfeed],  *sgabsinc, *sgplane, pwcs,e$ 
-	  pbld, n$,*sgcode,pfxout, pfyout, pfcout,e$
-	  #pcan1, pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgabsinc,  pwcs, pfxout, pfyout, pfcout,e$
-      
-      if use_rot_lock & cuttype = zero, prot_lock
-      #pbld, n$, sg43, *tlngno$, pfzout, pscool, pstagetool, e$
+      pcan1, pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgabsinc, *sgplane, pwcs, pfxout, pfyout, pfcout,
+        [if nextdc$ <> 7, *speed, *spindle], pgear, [if gcode$, *feed], strcantext, e$
+      if use_rot_lock & (cuttype = zero | drilling) & cutpos$ <> six, prot_lock
+      pbld, n$, sg43, *tlngno$, pfzout, pscool, pstagetool, e$
       absinc$ = sav_absinc
       pbld, n$, sgabsinc, e$
       pcom_movea
       toolchng = zero
       c_msng$ #Single tool subprogram call
+      probing_after_coordinates
       !xnci$, !ynci$, !znci$
 
 pstagetool      #Pre-stage tools
@@ -1061,11 +1092,8 @@ pretract        #End of tool path, toolchange
         ]
       pbld, n$, sccomp, *sm05, psub_end_mny, e$
       if convert_rpd$, pconvert_rpd
-      #pbld, n$, [if gcode$, sgfeed], sgabsinc, sgcode, *sg28ref, "Z0.", [if gcode$, feed], scoolant, e$
-	  pbld, n$,[if gcode$, feed], scoolant, e$
-      #if nextop$ = 1003 | tlchg_home, pbld, n$, *sg28ref, "X0.", "Y0.", protretinc, e$
-	  if nextop$ = 1003 | tlchg_home, pbld, n$, "G00","G53", "Z-5.",  e$
-	  pbld, n$, "G00","G53", "X-10.", "Y-10.",protretinc,e$
+      pbld, n$, [if gcode$, sgfeed], sgabsinc, sgcode, *sg28ref, "Z0.", [if gcode$, feed], scoolant, e$
+      if nextop$ = 1003 | tlchg_home, pbld, n$, *sg28ref, "X0.", "Y0.", protretinc, e$
       else, pbld, n$, protretinc, e$
       absinc$ = sav_absinc
       coolant$ = sav_coolant
@@ -1092,10 +1120,12 @@ peof0$           #End of file for tool zero
       peof$
 
 peof$            #End of file for non-zero tool
+      probing_ptoolend
       pretract
       comment$
       if stagetool = 1 & stagetltype = 2, pbld, n$, *first_tool$, e$
       uninhibit_eof_probe$
+      probing_eof
       n$, "M30", e$
       if subs_before, #Merge subs before main program
         [             #At this point, the NC / Main program level is blank (Main prg was written to ext with subs before)
@@ -1177,6 +1207,7 @@ pq$              #Setup post based on switch settings
       result = newfs(11, cdelta_calc)  #Format for 3 place precision
 
 ptoolend$        #End of tool path, before reading new tool data
+      probing_ptoolend
       !speed, !spdir2
 
 ptlchg1002$      #Call at actual toolchange, end last path here
@@ -1217,17 +1248,13 @@ ptool_insp   #Tool Inspection Point Customization Required
       absinc$ = one
       pbld, n$, sm05, e$ #Spindle off
       pbld, n$, sm00,"(CAUTION POST GENERATING MOTION FOR TOOL INSPECTION)", e$
-      #pbld, n$, *sgabsinc, *sg28ref, "Z0.", scoolant, e$
-	  #pbld, n$,"G53", "G00", "Z0.", scoolant, e$
-      #pbld, n$, *sg28ref, "X0.", "Y0.", e$
-	  #pbld, n$, "G00", "X0.", "Y0.", e$
+      pbld, n$, *sgabsinc, *sg28ref, "Z0.", scoolant, e$
+      pbld, n$, *sg28ref, "X0.", "Y0.", e$
       pbld, n$, sm00, "(INSPECT TOOL)", e$
       absinc$ = sav_absinc
-	  pbld, n$,*speed, *spindle, pgear, e$
-      pbld, n$, , *sgabsinc, pwcs,*sgcode, *xabs, *yabs, e$
-	  
+      pbld, n$, *sgcode, *sgabsinc, pwcs, *xabs, *yabs, *speed, *spindle, pgear, e$
       pinsp_cool_on #Coolant on after tool inspection
-      #pbld, n$, sg43, *tlngno$, *zabs, scoolant, e$
+      pbld, n$, sg43, *tlngno$, *zabs, scoolant, e$
 
 #region NC output postblocks
 # --------------------------------------------------------------------------
@@ -1236,22 +1263,24 @@ ptool_insp   #Tool Inspection Point Customization Required
 # --------------------------------------------------------------------------
 
 prapidout       #Output to NC of linear movement - rapid
-      if convert_rpd$, pconvert_rpd
       pcan1, pbld, n$, [if gcode$, `sgfeed], sgplane, `sgcode, sgabsinc, pccdia,
         pxout, pyout, pzout, pcout, [if gcode$, `feed], strcantext, pscool, e$
       if force_feed, result = force(feed)  # Force output of feed next time it's called for output
       if rpd_typ$ = 7, ptool_insp #Tool Inspection Point
 
 plinout         #Output to NC of linear movement - feed
+      if sub_is_active & absinc$ = 0, result = force(xabs, yabs)
       pcan1, pbld, n$, sgfeed, sgplane, `sgcode, sgabsinc, pccdia,
-	  #pcan1, pbld, n$, sgfeed,  `sgcode, sgabsinc, pccdia,
         pxout, pyout, pzout, pcout, [if motst$, feed], strcantext, pscool, e$
       if rpd_typ$ = 7, ptool_insp #Tool Inspection Point
 
+      sub_is_active = 0 #Turning this off here will allow the subs to return to modality
+
 pcirout         #Output to NC of circular interpolation
+      if sub_is_active & absinc$ = 0, result = force(xabs, yabs)
       pcan1, pbld, n$, `sgfeed, sgplane, sgcode, sgabsinc, pccdia,
-	  #pcan1, pbld, n$, `sgfeed,  sgcode, sgabsinc, pccdia,
         pxout, pyout, pzout, pcout, parc, feed, strcantext, pscool, e$
+      sub_is_active = 0 #Turning this off here will allow the subs to return to modality
 
 #endregion
 
@@ -1264,6 +1293,7 @@ pncoutput       #Movement output
       pcom_moveb
       comment$
       pcan
+      if gcode$ = zero & convert_rpd$, pconvert_rpd
       if mr_rt_actv,
         [
         !cabs, !cinc #No rotary in sub
@@ -1290,8 +1320,8 @@ pcom_movea      #Common motion preparation routines, after
 pdwl_spd$        #Call from NCI gcode 4
       pspindle
       comment$
+      pcan #Updated to support advance drill.
       pspindchng
-      pcan
       if fmtrnd(dwell$), pcan1, pbld, n$, *sgcode, *dwell$, strcantext, e$
       else, pcan1, pbld, n$, strcantext, e$
       pcan2
@@ -1318,7 +1348,7 @@ pcir$            #Output to NC of circular interpolation
 pmx0$            #5 axis gcode setup
       if drillcur$ = zero,
         [
-        if fr$ = -2, gcode$ = zero
+        if fr$ = -2 & not(convert_rpd$), gcode$ = zero
         else, gcode$ = one
         ]
 
@@ -1508,7 +1538,7 @@ ppos_cax_lin    #Position the rotary axis before move - rapid
           sav_gcode = gcode$
           gcode$ = zero
           if convert_rpd$, pconvert_rpd
-          pbld, n$, [if gcode$, sgfeed], sgcode, pcout, [if gcode$, feed], e$
+          pbld, n$, sgabsinc, [if gcode$, sgfeed], sgcode, pcout, [if gcode$, feed], e$
           !cia
           ps_cinc_calc
           gcode$ = sav_gcode
@@ -1532,6 +1562,8 @@ pdrill0$         #Pre-process before drill call
       sav_dgcode = gcode$ #Capture gcode for 5 axis drill
 
 pdrlcommonb     #Canned Drill Cycle common call, before
+      if use_rot_lock & (cuttype = zero | drilling), prot_lock
+      if use_rot_lock & rot_changed, prot_unlock, e$
       pbld, n$, sgplane, e$
       if initht$ <> refht$, drillref = zero
       else, drillref = one
@@ -1659,15 +1691,14 @@ pdrlcst$         #Custom drill cycles 8 - 19 (user option)
       else,
         [
         pdrlcommonb
-        sopen_prn, "CUSTOMIZABLE DRILL CYCLE - NOT CONFIGURED - FIRST HOLE", sclose_prn, e$
+        *sm00, sopen_prn, "CUSTOMIZABLE DRILL CYCLE - NOT CONFIGURED - FIRST HOLE", sclose_prn, e$
         pcom_movea
         ]
 
 pdrlcst8         #Custom drill cycle 8 - example custom cycle
       pdrlcommonb
       sopen_prn, "CUSTOMIZABLE DRILL CYCLE EXAMPLE - FIRST HOLE", sclose_prn, e$
-      pcan1, pbld, n$, *sgdrlref, *sgdrill, pxout, pyout, pfzout, pcout,
-        prdrlout, shftdrl$, dwell$, *feed, strcantext, e$
+      pcan1, pbld, n$, *sm00, pfxout, pfyout, pfzout, pcout, *feed, strcantext, e$
       pcom_movea
 
 #endregion
@@ -1676,7 +1707,7 @@ pdrlcst8         #Custom drill cycle 8 - example custom cycle
 # Additional Holes
 pdrill_2$        #Canned Drill Cycle, additional points
       pdrlcommonb
-      pcan1, pbld, n$, pxout, pyout, pzout, pcout, prdrlout, feed, strcantext, e$
+      pcan1, pbld, n$, sgdrlref, pxout, pyout, pzout, pcout, prdrlout, feed, strcantext, e$
       pcom_movea
 
 ppeck_2$         #Canned Peck Drill Cycle
@@ -1699,7 +1730,7 @@ pmisc1_2$        #Canned Fine Bore (shift) Cycle
 
 pmisc2_2$        #Canned Rigid Tapping Cycle
       pdrlcommonb
-      pcan1, pbld, n$, pxout, pyout, pzout, pcout, prdrlout, strcantext, e$
+      pcan1, pbld, n$, sgdrlref, pxout, pyout, pzout, pcout, prdrlout, strcantext, e$
       pcom_movea
 #endregion
 
@@ -1710,12 +1741,13 @@ pdrlcst_2$       #Custom drill cycles 8 - 19, additional points (user option)
       else,
         [
         sopen_prn, "CUSTOMIZABLE DRILL CYCLE - NOT CONFIGURED - NEXT HOLE", sclose_prn, e$
-        pdrill_2$
         ]
 
 pdrlcst8_2       #Custom drill cycle 8 - example custom cycle
       sopen_prn, "CUSTOMIZABLE DRILL CYCLE EXAMPLE - NEXT HOLE", sclose_prn, e$
-      pdrill_2$
+      pdrlcommonb
+      pcan1, pbld, n$, sgdrlref, pxout, pyout, pfzout, pcout, feed, strcantext, e$
+      pcom_movea
 #endregion
 
 #region Cancel canned drill cycle
@@ -1726,7 +1758,7 @@ pcanceldc$       #Cancel canned drill cycle
       else, prv_zia = initht$
       pxyzcout
       !zabs, !zinc
-      prv_gcode$ = zero
+      result = force(gcode$)
       pcan
       pcan1, pbld, n$, sg80, strcantext, e$
       if (drillcyc$ = 3 | drillcyc$ = 7) & tap_feedtype, pbld, n$, sg94, e$
@@ -1797,7 +1829,7 @@ psub_call_trans #Translate level calls from toolchange, user
           [
           if mi1$ > one, absinc$ = zero
           if convert_rpd$, pconvert_rpd
-          pbld, n$, [if gcode$, *sgfeed],  *sgabsinc, pwcs, pfxout,*sgcode, pfyout, pfzout, pfcout, [if gcode$, *feed], e$
+          pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgabsinc, pwcs, pfxout, pfyout, pfzout, pfcout, [if gcode$, *feed], e$
           pe_inc_calc
           ps_inc_calc
           ]
@@ -1816,7 +1848,7 @@ psub_mirror     #Mirror start code, user
 
 psub_rotate     #Rotate start code, user
       if convert_rpd$, pconvert_rpd
-      pbld, n$, [if gcode$, *sgfeed],  *sgabsinc, strns_rot_on, *sgcode,*sub_trnsx$, *sub_trnsy$,
+      pbld, n$, [if gcode$, *sgfeed], *sgcode, *sgabsinc, strns_rot_on, *sub_trnsx$, *sub_trnsy$,
         [absinc$ = one], *sgabsinc, *rt_cinc, [if gcode$, *feed], e$
 
 psub_st_m$       #Header in main level
@@ -1886,6 +1918,7 @@ psub_call_s$     #Call to sub level
       sub_prg_no$ = sub_prg_no$ + 1000 #Add sub number offset
       if progno$ = sub_prg_no$, result = mprint(sprgnerror)
       pbld, n$, "M98", *sub_prg_no$, e$
+      sub_is_active = 1
 
 psub_st_s$       #Header in sub leveln
       result = nwadrs(stro, sub_prg_no$)
@@ -1897,6 +1930,7 @@ psub_st_s$       #Header in sub leveln
 psub_end_s$      #End in sub level
       n$, "M99", e$
       prv_absinc$ = -1
+      sub_is_active = 0
 #endregion
 
 #region Canned text
@@ -2192,7 +2226,7 @@ pmotion_su      #Motion Setup (Set brklinestype & linarc)
           linarc$ = one  #Linearize all arcs
           if rev_brkflag,  #Break rotation flag (set in pcoutrev)
             [
-            brklinestype$ = 11  #Break all lines, use brklineslen$ for segment length
+            brklinestype$ = 111  #Break all lines, use brklineslen$ for segment length
             #brklineslen$ = pi$ * rotdia$        #Break every 360 degrees
             brklineslen$ = pi$ * rotdia$ / four  #Break every 90 degrees
             rev_brkflag = zero  #Reset flag
@@ -2326,6 +2360,7 @@ pxyzcout3       #Multisurf rotary axis motion
       xabs = rotp (csav, x$)
       u$ = rotp (csav, u$)
       csav = csav + c$
+      !vtoolx$, !vtooly$ # Added for "rot_changed"
 
 #endregion
 
@@ -2494,7 +2529,8 @@ pfclc_deg_inv   #Feedrate deg/min
         [
         #Feedrate deg/min control and calculation
         ipr_type = zero  #Change to ipr_type = one to force new DPM
-        frdeg = abs(cdelta/cldelta) * abs(fr_pos$ * (360/circum))
+        if cdelta / cldelta < mtol$, frdeg = fr_pos$
+        else, frdeg = abs(cdelta/cldelta) * abs(fr_pos$ * (360/circum))
         if abs(frdeg - prvfrdeg) > frdegstp | ipr_type <> prv_ipr_type,
           [
           #Control output of frdeg
@@ -2539,6 +2575,7 @@ pprep$          #Pre-process postblock - Allows post instructions after the post
       rd_cd$             #Read CD Parameters
       rd_mch_ent_no$ = 0 #Read only the machine base parameters (use to collect common parameters from CNC_MACHINE_TYPE)
       rd_md$             #Read machine definition parameters
+      probing_pprep
 
 psynclath$      #Read NCI Axis-Combination (950) line
       pset_mach   #Set rotary switches by reading machine def parameters
@@ -2555,6 +2592,7 @@ pwrttparam$     #Pre-read parameter data
       if prmcode$ = 15346, comp_type = rpar(sparameter$, 1) #Cutter compensation type - 0=computer, 1=control, 2=wear, 3=reverse wear, 4=off
       if prmcode$ = 10010, xy_stock = rpar(sparameter$, 1)  #Capture stock to leave (XY)
       if prmcode$ = 10068, z_stock = rpar(sparameter$, 1)   #Capture stock to leave (Z)
+      probing_pwrttparam
 
 pparameter$     #Read operation parameters
       #rd_params is used to call pparameter postblock and read the parameters of the operation specified in rd_param_op_no
@@ -2579,7 +2617,7 @@ fprmtbl 17000   15   #Table Number, Size
         17605   min_speed    #Minimum spindle speed
         17058   maxfrinv     #Maximum feedrate - inverse time - inch - Minimum value from MD as this is inverse time
         17066   maxfrinv_m   #Maximum feedrate - inverse time - metric - Minimum value from MD as this is inverse time
-        17992   maxfrdeg     #Maximum feedrate deg/min
+        17933   maxfrdeg     #Maximum feedrate deg/min
         17055   maxfeedpm    #Limit for feed in inch/min
         17063   maxfeedpm_m  #Limit for feed in mm/min
         17101   all_cool_off #First coolant off command shuts off ALL coolant options
@@ -2672,6 +2710,529 @@ pmachineinfo$   #Machine information parameters postblock
       !maxfeedpm, !maxfeedpm_m
 #endregion
 
+
+#region Mastercam_Probe
+
+# --------------------------------------------------------------------------
+# Mastercam Probing
+# --------------------------------------------------------------------------
+
+# Probing chook buffer
+prb_bufno                 := 10
+prb_rc                    :  1
+prb_size                  :  0
+sprb_result               :  ""
+
+fbuf 10 0 256 1 1
+
+# Probing chook path and argument strings
+sprb_chook                : ""
+sprb_arg1                 : ""
+sprb_arg2                 : ""
+sprb_arg3                 : ""
+sprb_args                 : ""
+
+# Probing output file settings - Do not edit!
+sprb_path                 : ""
+sprb_file                 : "Probing"
+sprb_nci                  : ".PrbNci"
+sprb_cfg                  : ".PrbCfg"
+
+# Probing dll call parameters
+prb_call_dll              : 0
+sprb_mode                 : 0      # Mode
+sprb_opid                 : 0      # Operation ID or 0 for all operations
+sprb_misc                 : 0      # Cut/Nullchange
+prb_result                : 0
+
+prb_wo_updated            : 0      # Set by chook! - if probe cycle updated machine work offset
+prb_tool_updated          : 0      # Set by chook! - if probe cycle updated machine tool data
+prb_rotaxis_updated       : 0      # Set by chook! - if probe cycle updated machine rotary axes
+prb_plane_measured        : 0      # Set by chook! - if probe cycle measured a plane
+
+prb_retract               : 0      # 1 = Retract, cancel planes etc...
+
+# Chook calling modes (sprb_mode)
+CheckProbingOperationType := 0     # Check if current operation has probing
+Prb_Active                := 2^0   # Operation is with probe tool
+Prb_Output                := 2^1   # Probe operation
+Prb_Suppress_Toolchg      := 2^2   # Suppress toolchange
+Prb_Suppress_First_Pos    := 2^3   # Suppress first position
+Prb_Transition            := 2^4   # Transitioning between probing operations
+Prb_3ax_Transition        := 2^5   # 3-axis transitioning between probing operations
+Prb_5ax_Transition        := 2^6   # 5-axis transitioning between probing operations
+Prb_Before_Tlchg          := 2^7   # Probing_output_after - Normal operation with probing output after toolchange or between operations in ptlchg0$
+Prb_After_Tlchg           := 2^8   # Probing_output_after - Normal operation with probing output after toolchange or between operations in ptlchg0$
+
+Generate_ProbingOutput    := 1     # Generate probing output
+                                   # sprb_opid > 0 (Specify operation op id number)
+                                   # sprb_misc > 0 (nullchange number, 1 = first)
+
+Generate_BeforeTlchg      := 2     # Generate "Before toolchange" output
+                                   # sprb_opid > 0 (Specify operation op id number)
+                                   # sprb_misc > 0 (nullchange number, 1 = first)
+
+Generate_AfterTlchg       := 3     # Generate "After toolchange" output
+                                   # sprb_opid > 0 (Specify operation op id number)
+                                   # sprb_misc > 0 (nullchange number, 1 = first)
+
+Generate_StartProgram     := 6     # Generate "After toolchange" output
+                                   # sprb_opid > 0 (Specify operation op id number)
+                                   # sprb_misc > 0 (nullchange number, 1 = first)
+
+Generate_EndProgram       := 7     # Generate "After toolchange" output
+                                   # sprb_opid > 0 (Specify operation op id number)
+                                   # sprb_misc > 0 (nullchange number, 1 = first)
+
+ModifyProbing             := 4     # Modify probing operations
+
+probing_call_chook
+   # Make sure buffers are closed
+   prb_result = fclose(10)
+
+   sprb_arg1 = no2str(sprb_mode)
+   sprb_arg2 = no2str(sprb_opid)
+   sprb_arg3 = no2str(sprb_misc)
+   sprb_args = '"' + sprb_arg1 + '" "' + sprb_arg2 + '" "' + sprb_arg3 + '"'
+
+   prb_result = dll (sprb_chook, sprb_args)
+
+   # dll always return 1, get result from chook
+   sbufname10$ = sprb_path + sprb_file + sprb_nci
+   prb_result = fclose(sbufname10$)
+
+   prb_result = -1
+   if fexist(sbufname10$),
+      [
+      sprb_result = "0"
+      prb_rc = 1
+      prb_size = rbuf(prb_bufno, 0)
+      if prb_size, sprb_result = rbuf(prb_bufno, prb_rc)
+      prb_result = rpar(sprb_result, 1)
+      ]
+   else, result = mprint("probing_call_chook : Not fexist(sbufname10$)")
+
+# --------------------------------------------------------------------------
+# Mastercam Probing - Write config (Overwrite probing settings before generating probing NCI)
+
+probing_write_config_start
+   spathext$ = sprb_path
+   snameext$ = sprb_file
+   sextext$  = sprb_cfg
+   extprg$ = 1 # Delete existing settings
+   subout$ = 3
+   newext$
+
+probing_write_config_end
+   subout$ = 0
+   result = fclose(spathext$ + snameext$ + sextext$)
+
+# --------------------------------------------------------------------------
+# Mastercam Probing - Output
+
+prb_sav_spaces     : 0
+prb_space_length   : 0
+prb_nci_code       : 0
+sprb_space_string  : ""
+sprb_parameters    : ""
+
+prb_space_padding
+   prb_sav_spaces = spaces$
+   spaces$ = 0
+   while prb_space_length > 0, " ", prb_space_length = prb_space_length - 1
+   spaces$ = prb_sav_spaces
+
+probing_operation
+
+   sprb_opid = op_id$
+   probing_call_chook
+
+   prb_wo_updated = -1
+   prb_tool_updated = 0
+   prb_rotaxis_updated = 0
+   prb_plane_measured = 0
+
+   if prb_result = 0,
+      [
+      # Output cycle parameters
+      prb_rc = 2
+      prb_size = rbuf(prb_bufno, 0)
+      while prb_rc < prb_size,
+         [
+         sprb_parameters = rbuf(prb_bufno, prb_rc)
+         prb_nci_code = rpar(sprb_parameters, 1)
+         sprb_parameters = rbuf(prb_bufno, prb_rc)
+
+         if prb_nci_code = 9200, n$
+         if prb_nci_code = 9201,
+            [
+            gcode$ = 0
+            x$ = rpar(sprb_parameters, 3)
+            prapid$
+            ]
+         if prb_nci_code = 9202,
+            [
+            gcode$ = 1
+            x$ = rpar(sprb_parameters, 3)
+            fr_pos$ =rparsngl(sprb_parameters, 4)
+            plin$
+            ]
+         if prb_nci_code = 9203, no_spc$
+         if prb_nci_code = 9204, e$
+         if prb_nci_code = 9205,
+            [
+            sprb_space_string = drs_str(2, n$)
+            prb_space_length = strlen(sprb_space_string)
+            prb_space_padding
+            ]
+         if prb_nci_code = 9206,
+            [
+            prb_space_length = rpar(sprb_parameters, 1)
+            prb_space_padding
+            ]
+         if prb_nci_code = 9207, *sprb_parameters
+
+         if prb_nci_code = 9501, prb_tool_updated = 1
+         if prb_nci_code = 9502, prb_rotaxis_updated = 1
+         if prb_nci_code = 9503, prb_plane_measured = 1
+         if prb_nci_code = 9504, prb_wo_updated = rpar(sprb_parameters, 1)
+
+         if prb_nci_code >= 10000 & prb_nci_code <= 10999, probing_variable_usage
+
+         if prb_nci_code = 9998, exitpost$
+         ]
+
+      probing_effect
+      ]
+
+# --------------------------------------------------------------------------
+# Mastercam Probing - Implement these postblocks !
+
+prb_operation      : 0
+prb_operation_next : 0
+prb_savedn         : 0
+
+# pprep$
+probing_pprep
+   # Set probing chook path - Do not edit!
+   sprb_chook = smc_mcam_dir$ + "chooks\MastercamProbing.dll"
+
+   # Set probing target path
+   sprb_path = smc_user_dir$ + "Mill\NCI\" #"
+
+# pwrttparam$
+probing_pwrttparam
+   if prmcode$ = 15267,
+      [
+      sparameter$ = ucase(sparameter$)
+      if sparameter$ = "MASTERCAMPROBING.DLL", prb_call_dll = 1
+      ]
+
+# psof$
+probing_sof
+   if prb_call_dll,
+      [
+      sprb_mode = Generate_StartProgram
+      probing_operation
+
+      sprb_mode = CheckProbingOperationType
+      sprb_opid = op_id$
+      sprb_misc = 1
+      probing_call_chook
+
+      prb_operation_next = prb_result
+      ]
+
+# peof$
+probing_eof
+   if prb_call_dll,
+      [
+      sprb_mode = Generate_EndProgram
+      probing_operation
+      ]
+
+# ptlchg$ / ptlchg0$
+probing_before_toolchange
+   if prb_call_dll,
+      [
+      # Set current operation
+      prb_operation = prb_operation_next
+      prb_wo_updated = -1
+      prb_tool_updated = 0
+      prb_rotaxis_updated = 0
+      prb_plane_measured = 0
+
+      # Restart position
+      if and(prb_operation, Prb_Before_Tlchg),
+         [
+         sprb_mode = Generate_BeforeTlchg
+         probing_operation
+         ]
+
+      # Modify probing output
+      probing_modify
+
+      # Suppres toolchange output
+      if and(prb_operation, Prb_Suppress_Toolchg),
+         [
+         no_nc_out$ = 1
+         prb_savedn = n$
+         ]
+      ]
+
+# ptlchg$ / ptlchg0$
+probing_after_toolchange
+   if prb_call_dll,
+      [
+      if and(prb_operation, Prb_Suppress_Toolchg),
+         [
+         no_nc_out$ = 0
+         n$ = prb_savedn
+         ]
+
+      if and(prb_operation, Prb_After_Tlchg),
+         [
+         sprb_mode = Generate_AfterTlchg
+         probing_operation
+         ]
+
+      # Suppres first position output
+      if and(prb_operation, Prb_Suppress_First_Pos),
+         [
+         no_nc_out$ = 1
+         prb_savedn = n$
+         ]
+      ]
+
+# psof$ / ptlchg$ / ptlchg0$
+probing_after_coordinates
+   if prb_call_dll,
+      [
+
+      # Suppres coordinate output
+      if (and(prb_operation, Prb_Output)),
+         [
+         no_nc_out$ = 1
+         prb_savedn = n$
+         ]
+      ]
+
+# ptoolend$ / peof$
+probing_ptoolend
+   if prb_call_dll,
+      [
+      # Output probing cycle
+      if (and(prb_operation, Prb_Output)),
+         [
+         no_nc_out$ = 0
+         n$ = prb_savedn
+         sprb_mode = Generate_ProbingOutput
+         probing_operation
+
+         # Invalidate position
+         prv_xabs = xabs + 9999
+         prv_yabs = yabs + 9999
+         prv_zabs = zabs + 9999
+         prv_gcode$ = -1
+         ]
+
+      # Check if next operation is probing
+      if (and(prb_operation, Prb_Before_Tlchg) | and(prb_operation, Prb_After_Tlchg) | and(prb_operation, Prb_Output))
+       & end_op_id$ = op_id$, sprb_misc = sprb_misc + 1
+      else, if end_op_id$ <> op_id$, sprb_misc = 1
+
+      if and(prb_operation, Prb_Transition), prb_retract = 1
+      else, prb_retract = 0
+
+      if end_op_id$ > 0
+       & (end_op_id$ <> op_id$ | and(prb_operation, Prb_Before_Tlchg) | and(prb_operation, Prb_After_Tlchg) | and(prb_operation, Prb_Output)),
+         [
+         prb_operation = 0
+         prb_operation_next = 0
+
+         sprb_mode = CheckProbingOperationType
+         sprb_opid = end_op_id$
+         probing_call_chook
+
+         prb_operation_next = prb_result
+         ]
+      ]
+
+# --------------------------------------------------------------------------
+# Mastercam Probing - Variable usage
+
+fmt "OPERATION " 10 var_op
+fmt "CYCLE "     10 var_cycle
+
+var_op        : -1
+var_cycle     : -1
+svar_name     : ""
+svar_comment  : ""
+var_new_op    : 0
+var_new_cycle : 0
+
+probing_variable_usage
+   if prb_nci_code = 10000, n$, "(PROBING VARIABLES START)", e$
+
+   if prb_nci_code = 10501, var_op = rparsngl(sprb_parameters, 1)
+   if prb_nci_code = 10502, var_cycle = rparsngl(sprb_parameters, 1)
+   if prb_nci_code = 10504, svar_name = ucase(sprb_parameters)
+   if prb_nci_code = 10505, svar_comment = ucase(sprb_parameters)
+   if prb_nci_code = 10699,
+      [
+      var_new_op = (var_op <> prv_var_op)
+      var_new_cycle = (var_cycle <> prv_var_cycle)
+
+      n$, "("
+
+      if var_new_op,
+         [
+         *var_op
+         sprb_space_string = drs_str(2, var_op)
+         prb_space_length = 13 - strlen(sprb_space_string)
+         ]
+      else, prb_space_length = 14
+      prb_space_padding
+      "|"
+
+      if var_new_cycle | var_new_op,
+         [
+         *var_cycle
+         sprb_space_string = drs_str(2, var_cycle)
+         prb_space_length = 8 - strlen(sprb_space_string)
+         ]
+      else, prb_space_length = 9
+      prb_space_padding
+      "|"
+
+      *svar_name, "=", *svar_comment
+
+      ")", e$
+      ]
+
+   if prb_nci_code = 10999, n$, "(PROBING VARIABLES END)", e$
+
+# --------------------------------------------------------------------------
+# Mastercam Probing - Machine/Post specific code
+
+# Handle the effect of probing cycles
+probing_effect
+
+   # Work offset modified by probing cycle - Invalidate work offset variable if current work offset is updated
+   if prb_wo_updated >= 0,
+      [
+
+      # External offset updated
+      #    prb_wo_updated = 0
+
+      # G54-G59 updated
+      if (prb_wo_updated >= 1 & prb_wo_updated <= 6) & (prb_wo_updated - 1) = prv_workofs$,
+         [
+         prv_workofs$ = -1
+         prv_g_wcs = -1
+         ]
+
+      if prb_wo_updated >= 7 & (prb_wo_updated - 1) = prv_workofs$,
+         [
+         # G54.1 P# updated
+         prv_workofs$ = -1
+         prv_p_wcs = -1
+         ]
+
+      ]
+
+   # Rotary axis ZERO modified by probing cycle - Invalidate current rotary axis position
+   if prb_rotaxis_updated,
+      [
+      prv_cabs     = cabs + 0.1
+      prv_indx_out = indx_out + 0.1
+      ]
+
+probe_m1 : 0
+probe_m2 : 0
+probe_m3 : 0
+probe_m4 : 0
+probe_m5 : 0
+probe_m6 : 0
+probe_m7 : 0
+probe_m8 : 0
+probe_m9 : 0
+
+# Modify probing cycles based on machine/post settings and configuration
+probing_modify
+
+   if and(prb_operation, Prb_Active) & fmtrnd(cabs),
+      [
+      probing_write_config_start
+
+      # Vertical machine
+      if vmc,
+         [
+         probe_m1 = 1
+         probe_m2 = 0
+         probe_m3 = 0
+         probe_m4 = 0
+         probe_m5 = 1
+         probe_m6 = 0
+         probe_m7 = 0
+         probe_m8 = 0
+         probe_m9 = 1
+         ]
+
+      # Horizontal machine
+      else,
+         [
+         probe_m1 = 1
+         probe_m2 = 0
+         probe_m3 = 0
+         probe_m4 = 0
+         probe_m5 = 0
+         probe_m6 = 1
+         probe_m7 = 0
+         probe_m8 = -1
+         probe_m9 = 0
+         ]
+
+      if rot_on_x = 1, axisx$ = vequ(aaxisx)
+      else, if rot_on_x = 2, axisx$ = vequ(baxisx)
+      else, if rot_on_x = 3, axisx$ = vequ(caxisx)
+
+      probe_m1 = rotp(cabs * fsg((rot_ccw_pos = 0), -1 , 1), probe_m1)
+      probe_m4 = rotp(cabs * fsg((rot_ccw_pos = 0), -1 , 1), probe_m4)
+      probe_m7 = rotp(cabs * fsg((rot_ccw_pos = 0), -1 , 1), probe_m7)
+
+      sprb_parameters =                   no2str(probe_m1) + " " + no2str(probe_m2) + " " + no2str(probe_m3) + " "
+      sprb_parameters = sprb_parameters + no2str(probe_m4) + " " + no2str(probe_m5) + " " + no2str(probe_m6) + " "
+      sprb_parameters = sprb_parameters + no2str(probe_m7) + " " + no2str(probe_m8) + " " + no2str(probe_m9)
+      "11004: ", no_spc$, *sprb_parameters, e$
+
+      probing_write_config_end
+
+      sprb_mode = ModifyProbing
+      sprb_opid = op_id$
+      probing_call_chook
+      ]
+
+# --------------------------------------------------------------------------
+
+#<Mastercam_Probing version="2.2">
+#...<Settings>
+#......<Post>
+#.........<ControlName>Fanuc_Renishaw</ControlName>
+#.........<ControlSubname>31i</ControlSubname>
+#.........<ControlVersion>2013</ControlVersion>
+#.........<ControlLanguage>en</ControlLanguage>
+#......</Post>
+#......<OutputFormat>
+#.........<Integer>1 0</Integer>
+#.........<Real>0.4</Real>
+#.........<Coord>0.4</Coord>
+#.........<Angle>0.4</Angle>
+#.........<Vector>0.8</Vector>
+#......</OutputFormat>
+#...</Settings>
+#</Mastercam_Probing>
+
 #region Post text
 # Do not add an #endregion tag -- or any other #region tags -- below this line.
 # --------------------------------------------------------------------------
@@ -2692,223 +3253,7 @@ pmachineinfo$   #Machine information parameters postblock
 				<text>Absolute/Incremental, top level [0=ABS, 1=INC]</text>
 			</misc_2>
 			<misc_3>
-				<text>Reference Return [0=G28, 1=G30]</text>
-			</misc_3>
-		</misc_integers>
-		<simple_drill>
-			<first_peck>
-				<text>""</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</simple_drill>
-		<peck_drill>
-			<dwell>
-				<text>""</text>
-			</dwell>
-			<first_peck>
-				<text>Peck</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</peck_drill>
-		<chip_break>
-			<dwell>
-				<text>""</text>
-			</dwell>
-			<first_peck>
-				<text>Peck</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</chip_break>
-		<tap>
-			<dwell>
-				<text>""</text>
-			</dwell>
-			<first_peck>
-				<text>""</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</tap>
-		<bore1>
-			<description>
-				<text>Bore #1 (feed-out)</text>
-			</description>
-			<first_peck>
-				<text>""</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</bore1>
-		<bore2>
-			<description>
-				<text>Bore #2 (stop spindle, rapid out)</text>
-			</description>
-			<dwell>
-				<text>""</text>
-			</dwell>
-			<first_peck>
-				<text>""</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</bore2>
-		<misc1>
-			<description>
-				<text>Fine Bore (shift)</text>
-			</description>
-			<first_peck>
-				<text>""</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-		</misc1>
-		<misc2>
-			<description>
-				<text>Rigid Tapping Cycle</text>
-			</description>
-			<dwell>
-				<text>""</text>
-			</dwell>
-			<first_peck>
-				<text>""</text>
-			</first_peck>
-			<subsequent_peck>
-				<text>""</text>
-			</subsequent_peck>
-			<peck_clearance>
-				<text>""</text>
-			</peck_clearance>
-			<retract_amount>
-				<text>""</text>
-			</retract_amount>
-			<shift>
-				<text>""</text>
-			</shift>
-		</misc2>
-		<drill_cycle_descriptions>
-			<misc_drill_1>
-				<text>Fine bore (shift)</text>
-			</misc_drill_1>
-			<misc_drill_2>
-				<text>Rigid Tapping Cycle</text>
-			</misc_drill_2>
-		</drill_cycle_descriptions>
-		<canned_text>
-			<canned_text_1>
-				<text>Stop</text>
-			</canned_text_1>
-			<canned_text_2>
-				<text>Ostop</text>
-			</canned_text_2>
-			<canned_text_3>
-				<text>Bld on</text>
-			</canned_text_3>
-			<canned_text_4>
-				<text>bLd off</text>
-			</canned_text_4>
-			<canned_text_5>
-				<text>M5</text>
-			</canned_text_5>
-			<canned_text_6>
-				<text>M6</text>
-			</canned_text_6>
-			<canned_text_7>
-				<text>M7</text>
-			</canned_text_7>
-			<canned_text_8>
-				<text>M8</text>
-			</canned_text_8>
-			<canned_text_9>
-				<text>M9</text>
-			</canned_text_9>
-			<canned_text_10>
-				<text>M10</text>
-			</canned_text_10>
-		</canned_text>
-	</control>
-<control>
-		<control_label>CTRL_MILL|DEFAULT</control_label>
-		<language>zh-CN</language>
-		<misc_integers>
-			<misc_1>
-				<text>Work Coordinates [0-1=G92, 2=G54's]</text>
-				<value>2</value>
-			</misc_1>
-			<misc_2>
-				<text>Absolute/Incremental, top level [0=ABS, 1=INC]</text>
-			</misc_2>
-			<misc_3>
-				<text>Reference Return [0=G28, 1=G30]</text>
+				<text>Reference Return [0=G28, 1=G28]</text>
 			</misc_3>
 		</misc_integers>
 		<simple_drill>
