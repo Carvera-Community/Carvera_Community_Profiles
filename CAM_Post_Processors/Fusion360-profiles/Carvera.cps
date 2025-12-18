@@ -140,6 +140,14 @@ properties = {
     value      : true,
     scope      : "post"
   },
+  rotate4thAxisRelativeToModelPlane: {
+    title      : "Rotate 4th Axis based on Angle between WCS and Model",
+    description: "This allows you to define angled WCS in setups and then automatically adds the gcode for A axis rotation. Make sure the Model Coordinate System is aligned with the carvera Global Coordinate System. This means your part's x axis has to be the rotation Axis. Rotate your Part if necessary.",
+    group      : "preferences",
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
+  },
   splitFile: {
     title      : "Split file",
     description: "Select your desired file splitting option.",
@@ -685,6 +693,12 @@ function defineWorkPlane(_section, _setWorkPlane) {
       if (_setWorkPlane) {
         forceWorkPlane();
         positionABC(abc, true);
+      }
+    } else if (getProperty("rotate4thAxisRelativeToModelPlane")) {
+      abc = getWorkPlaneMachineABC(_section.getModelPlane().getTransposed());
+
+      if (_setWorkPlane) {
+        setWorkPlane(abc);
       }
     } else {
       abc = getWorkPlaneMachineABC(_section.workPlane);
