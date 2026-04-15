@@ -10,7 +10,7 @@
   FORKID {D897E9AA-349A-4011-AA01-06B6CCC181EB}
 */
 
-description = "Makera Carvera Community Post v1.3.1";
+description = "Makera Carvera Community Post v1.4.3";
 
 vendor = "Makera";
 vendorUrl = "https://www.makera.com";
@@ -82,7 +82,7 @@ properties = {
   writeMachine: {
     title      : "Write machine",
     description: "Output the machine settings in the header of the code.",
-    group      : "formats",
+    group      : "4. File Structure",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -90,52 +90,23 @@ properties = {
   writeTools: {
     title      : "Write tool list",
     description: "Output a tool list in the header of the code.",
-    group      : "formats",
+    group      : "4. File Structure",
     type       : "boolean",
     value      : true,
     scope      : "post"
   },
   returnClearance: {
-    title      : "Return Clearance",
+    title      : "Return to Clearance",
     description: "Return to clearance position when the job is finished.",
-    group      : "homePositions",
+    group      : "4. File Structure",
     type       : "boolean",
     value      : true,
-    scope      : "post"
-  },
-  showSequenceNumbers: {
-    title      : "Use sequence numbers",
-    description: "'Yes' outputs sequence numbers on each block, 'Only on tool change' outputs sequence numbers on tool change blocks only, and 'No' disables the output of sequence numbers.",
-    group      : "formats",
-    type       : "enum",
-    values     : [
-      {title:"Yes", id:"true"},
-      {title:"No", id:"false"},
-      {title:"Only on tool change", id:"toolChange"}
-    ],
-    value: "false",
-    scope: "post"
-  },
-  sequenceNumberStart: {
-    title      : "Start sequence number",
-    description: "The number at which to start the sequence numbers.",
-    group      : "formats",
-    type       : "integer",
-    value      : 10,
-    scope      : "post"
-  },
-  sequenceNumberIncrement: {
-    title      : "Sequence number increment",
-    description: "The amount by which the sequence number is incremented by in each block.",
-    group      : "formats",
-    type       : "integer",
-    value      : 1,
     scope      : "post"
   },
   separateWordsWithSpace: {
     title      : "Separate words with space",
     description: "Adds spaces between words if 'yes' is selected.",
-    group      : "formats",
+    group      : "4. File Structure",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -143,7 +114,7 @@ properties = {
   splitFile: {
     title      : "Split file",
     description: "Select your desired file splitting option.",
-    group      : "preferences",
+    group      : "4. File Structure",
     type       : "enum",
     values     : [
       {title:"No splitting", id:"none"},
@@ -156,15 +127,49 @@ properties = {
   splitFileHeader: {
     title      : "Write Tool# and Header To Each Split By Toolpath File",
     description: "Write Tool# and Header To Each Split By Toolpath File",
-    group      : "preferences",
+    group      : "4. File Structure",
     type       : "boolean",
     value: true,
     scope: "post"
   },
+  laserEtchPower: {
+    title      : "Laser etch power",
+    description: "Sets the laser etch power.",
+    group      : "3. Laser",
+    type       : "number",
+    value      : 0.1,
+    scope      : "post"
+  },
+  laserPower: {
+    title      : "Laser power",
+    description: "Sets the laser power.",
+    group      : "3. Laser",
+    type       : "number",
+    value      : 1,
+    scope      : "post"
+  },
+  rotate4thAxisRelativeToModelPlane: {
+    title      : "Automatic rotation of the 4th Axis",
+    description: "If you are using the free version of fusion: Automatically rotates the 4th axis between consecutive setups. This means that the X-axis of the part has to be the rotation axis for the A axis. It will calculates the difference between consecutive model planes and automatically rotate the A axis accordingly between each setup. Setup 1 will be treated as the A-axis rotation of 0.",
+    group      : "2. Free version enhancements",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  useManual4thAxisRotations: {
+    title      : "Use Manual NC Code to rotate A axis",
+    description: "If you are using the free version of fusion and the manual NC to set A axis rotations, set this to true. Note that it will no longer put a G0 A0 at the top of every operation so you have to define a axis rotations manually, it will not automatically rotate to zero at the start of the file",
+    group      : "2. Free version enhancements",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  
+  
   defaultUseExternalControl: {
     title      : "Spindle-based External Control",
     description: "Turn the external PWM control on/off when the spindle is turned on/off.",
-    group      : "preferences",
+    group      : "1. Preferences",
     type       : "boolean",
     value: true,
     scope: "post"
@@ -172,49 +177,51 @@ properties = {
   useExtForAirCoolant: {
     title      : "Use Ext For Air Coolant",
     description: "Turn the external PWM control on/off when the air coolant is turned on/off.",
-    group      : "preferences",
+    group      : "1. Preferences",
     type       : "boolean",
     value: false,
     scope: "post"
   },
     manualToolChangeBehavior: {
     title      : "Manual Tool Change Behavior",
-    description: "If you are using the Carvera Air, choose the Carvera Air option. If you are using the carvera community firmware, that option will allow you to use tools 0-99. If you are using the stock carvera firmware on the non air variant, choose the fusion manual tool changes to generate tool changes when a tool number is greater than 6, the shank size changes, or the tool is marked for manual tool change. If you want the default behavior for the Carvera where it alarms on any tool number greater than 6, choose the first option",
-    group      : "preferences",
+    description: "If you are using community firmware, select the community firmware option. If you are using a stock machine, choose the relavent option. The Stock C1 with manual tool changes will add code to do manual tool changes on tool numbers greater than 6 or the tool is marked for manual change, with the option to set up manual tool changes when the shank size changes. The community firmware does this automatically",
+    group      : "1. Preferences",
     type       : "enum",
     values     : [
-      {title:"Error On More Than 6 Tools", id:"error6"},
-      {title:"Fusion Manual Tool Changes", id:"fusionMtc"},
-      {title:"Carvera Community Tool Changes", id:"carvcomMtc"},
-      {title:"Carvera Air Tool Changes", id:"carvAirMtc"}
+      {title:"Stock Air", id:"carvAirMtc"},
+      {title:"Stock C1", id:"error6"},
+      {title:"Stock C1 with Manual Tool Changes", id:"fusionMtc"},
+      {title:"Carvera Community", id:"carvcomMtc", description:"works on both the C1 and Air and allows the use of the collet changes and offset tool support."},
+   
     ],
     value: "carvAirMtc",
 
 
     scope: "post"
   },
-  useShankSizeForManualChange: {
-    title      : "Write Manual Tool Changes when Shank Size Changes",
-    description: "",
-    group      : "preferences",
-    type       : "boolean",
-    value      : true,
+  
+  yAxisSafePosition: {
+    title      : "Safe Y-axis position for A-axis rotation",
+    description: "The Y-axis position to move to when performing a safe A-axis rotation. A value of 0 means that the Y-axis will not be moved during A-axis rotations. This setting can be left default for normal operation.",
+    group      : "1. Preferences",
+    type       : "integer",
+    value      : -100,
     scope      : "post"
   },
-  rotate4thAxisRelativeToModelPlane: {
-    title      : "Automatic rotation of the 4th Axis",
-    description: "Automatically rotates the 4th axis between consecutive setups. This means that the X-axis of the part has to be the rotation axis for the A axis. It will calculates the difference between consecutive model planes and automatically rotate the A axis accordingly between each setup. Setup 1 will be treated as the A-axis rotation of 0.",
-    group      : "preferences",
+  useToolCommentForChangeParameters: {
+    title      : "Community Firmware Offset Tool Change Support",
+    description: "Community Firmware: Use the tool comment field to add parameters to the tool change command (e.g. M6 T1 X-12 R3, where \"X-12 R3\" is in the comment field). This allows the user to probe face mills",
+    group      : "1. Preferences",
     type       : "boolean",
     value      : false,
     scope      : "post"
   },
-  yAxisSafePosition: {
-    title      : "Safe Y-axis position for A-axis rotation",
-    description: "The Y-axis position to move to when performing a safe A-axis rotation. A value of 0 means that the Y-axis will not be moved during A-axis rotations. This setting can be left default for normal operation.",
-    group      : "preferences",
-    type       : "integer",
-    value      : -100,
+  issueColletChangeOnShankSizeChange: {
+    title      : "Community Firmware Collet Changes",
+    description: "Community Firmware: Add info about the collet to use to tool change commands. (e.g. M6 T1 S1, where \"S1\" is the collet change parameter)",
+    group      : "1. Preferences",
+    type       : "boolean",
+    value      : false,
     scope      : "post"
   },
 };
@@ -230,6 +237,7 @@ wcsDefinitions = {
 var numberOfToolSlots = 9999;
 var previousToolChangeWasManual = false;
 var subprograms = new Array();
+var laser_used = false;
 
 var singleLineCoolant = false; // specifies to output multiple coolant codes in one line rather than in separate lines
 // samples:
@@ -240,12 +248,12 @@ var coolants = [
   {id:COOLANT_FLOOD, on:8},
   {id:COOLANT_MIST},
   {id:COOLANT_THROUGH_TOOL},
-  {id:COOLANT_AIR, on:7},
+  {id:COOLANT_AIR, on:[400,7]},
   {id:COOLANT_AIR_THROUGH_TOOL},
   {id:COOLANT_SUCTION},
   {id:COOLANT_FLOOD_MIST},
   {id:COOLANT_FLOOD_THROUGH_TOOL},
-  {id:COOLANT_OFF, off:9}
+  {id:COOLANT_OFF, off:[400,9]}
 ];
 
 var gFormat = createFormat({prefix:"G", decimals:0});
@@ -258,6 +266,7 @@ var feedFormat = createFormat({decimals:(unit == MM ? 1 : 2), type:FORMAT_REAL})
 var inverseTimeFormat = createFormat({decimals:3, forceDecimal:true});
 var toolFormat = createFormat({decimals:0});
 var rpmFormat = createFormat({decimals:0});
+var powerFormat = createFormat({decimals:2});
 var pwmFormat = createFormat({decimals:0, maximum:100, minimum:0});
 var secFormat = createFormat({decimals:3, forceDecimal:true}); // seconds - range 0.001-1000
 var taperFormat = createFormat({decimals:1, scale:DEG});
@@ -273,6 +282,7 @@ var feedOutput = createVariable({prefix:"F"}, feedFormat);
 var inverseTimeOutput = createVariable({prefix:"F", force:true}, inverseTimeFormat);
 var pwmOutput = createVariable({prefix:"S", force:true}, pwmFormat);
 var sOutput = createVariable({prefix:"S"}, rpmFormat);
+var powerOutput = createOutputVariable({prefix:"S"}, powerFormat);
 
 // circular output
 var iOutput = createVariable({prefix:"I"}, xyzFormat);
@@ -290,7 +300,6 @@ var fourthAxisRotationPreviousLocation = undefined;
 var WARNING_WORK_OFFSET = 0;
 
 // collected state
-var sequenceNumber;
 var forceSpindleSpeed = false;
 var currentWorkOffset;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
@@ -303,26 +312,74 @@ function writeBlock() {
   if (!text) {
     return;
   }
-  if (getProperty("showSequenceNumbers") == "true") {
-    writeWords2("N" + sequenceNumber, arguments);
-    sequenceNumber += getProperty("sequenceNumberIncrement");
-  } else {
-    writeWords(arguments);
-  }
+
+  writeWords(arguments);
 }
 
 function formatComment(text) {
   return "(" + String(text).replace(/[()]/g, "") + ")";
 }
 
+/** Standard collet diameters in mm (order: 6.35 before 6 to match correctly). Map to S1-S5; do not change S numbering. */
+var STANDARD_SHAFT_DIAMETERS_MM = [3, 3.175, 4, 6.35, 6, 8];
+var STANDARD_SHAFT_TOLERANCE_MM = 0.01;
+
+/**
+  Analyse tool.shaft sections: if any section diameter matches 3.175, 4, 6, 6.35 or 8 mm, return that value in mm.
+  getDiameter(i) is in current unit (MM or IN); comparison is in mm.
+  Returns the matching standard diameter (number) or undefined if no match / no shaft.
+*/
+function getMatchingShaftDiameterMm(tool) {
+  if (!tool.shaft || !tool.shaft.hasSections()) {
+    return undefined;
+  }
+  var n = tool.shaft.getNumberOfSections();
+  for (var i = 0; i < n; ++i) {
+    var dia = tool.shaft.getDiameter(i);
+    var diaMm = (unit == MM) ? Number(dia) : (Number(dia) * 25.4);
+    if (isNaN(diaMm)) continue;
+    for (var j = 0; j < STANDARD_SHAFT_DIAMETERS_MM.length; ++j) {
+      if (Math.abs(diaMm - STANDARD_SHAFT_DIAMETERS_MM[j]) <= STANDARD_SHAFT_TOLERANCE_MM) {
+        return STANDARD_SHAFT_DIAMETERS_MM[j];
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+  Get shaft diameter in mm for a tool: prefer segment match (3/3.175/4/6/6.35/8), else tool.shaftDiameter in mm.
+*/
+function getToolShaftDiameterMm(tool) {
+  var match = getMatchingShaftDiameterMm(tool);
+  if (match !== undefined) return match;
+  var raw = (typeof tool.shaftDiameter === "number") ? tool.shaftDiameter : 0;
+  return (unit == MM) ? raw : (raw * 25.4);
+}
+
+/**
+  Returns S1-S5 parameter for tool change when shank diameter changed.
+  DO NOT CHANGE THIS NUMBERING: S1=3.175mm, S2=4mm, S3=6mm, S4=6.35mm, S5=8mm.
+  diameterMm in mm. Returns "" if no match.
+*/
+function getShankSizeSuffix(diameterMm) {
+  var d = Number(diameterMm);
+  if (isNaN(d)) return "";
+  var tol = STANDARD_SHAFT_TOLERANCE_MM;
+  if (Math.abs(d - 3) <= tol) return "S1";
+  if (Math.abs(d - 3.175) <= tol) return "S2";
+  if (Math.abs(d - 4) <= tol) return "S3";
+  if (Math.abs(d - 6.35) <= tol) return "S5";
+  if (Math.abs(d - 6) <= tol) return "S4";
+  if (Math.abs(d - 8) <= tol) return "S6";
+  return "";
+}
+
 /**
   Writes the specified block - used for tool changes only.
 */
 function writeToolBlock() {
-  var show = getProperty("showSequenceNumbers");
-  setProperty("showSequenceNumbers", (show == "true" || show == "toolChange") ? "true" : "false");
   writeBlock(arguments);
-  setProperty("showSequenceNumbers", show);
 }
 
 /**
@@ -341,7 +398,9 @@ function onPassThrough(text) {
 function onParameter(name, value) {
   var invalid = false;
   if (name == "action") {
-
+    if (value == "pierce"){
+      return;//nothing special happens
+    }
     if (String(value).toUpperCase() == "SPINDLEOFF"){
       writeBlock("M5 (Spindle Off)")
     } else if (String(value).toUpperCase() == "CLEARANCE"){
@@ -351,20 +410,28 @@ function onParameter(name, value) {
     } else if (String(value).toUpperCase() == "RESETFEEDOVERRIDE"){
       writeBlock("M220 S100 (Reset Feed Speed override)")
     } else if (String(value).toUpperCase() == "AIRON"){
+      writeBlock("M400")
       writeBlock("M7 (Compressed Air On)")
     } else if (String(value).toUpperCase() == "AIROFF"){
+      writeBlock("M400")
       writeBlock("M9 (Compressed Air Off)")
     } else if (String(value).toUpperCase() == "VACON"){
+      writeBlock("M400")
       writeBlock("M801 S100 (Vacuum On)")
     } else if (String(value).toUpperCase() == "VACOFF"){
+      writeBlock("M400")
       writeBlock("M802 (Vacuum Off)")
     } else if (String(value).toUpperCase() == "AUTOVACON"){
+      writeBlock("M400")
       writeBlock("M331 (Turn On Auto Vacuum)")
     } else if (String(value).toUpperCase() == "AUTOVACOFF"){
+      writeBlock("M400")
       writeBlock("M332 (Turn Off Auto Vacuum)")
     } else if (String(value).toUpperCase() == "LIGHTON"){
+      writeBlock("M400")
       writeBlock("M821 (Turn On Light)")
     } else if (String(value).toUpperCase() == "LIGHTOFF"){
+      writeBlock("M400")
       writeBlock("M822 (Turn Off Light)")
     } else if (String(value).toUpperCase() == "EXTON"){
       writeBlock("M400")
@@ -391,6 +458,9 @@ function onParameter(name, value) {
         } else if (sText2[0].toUpperCase() == "SAFERA") {
           if (sText2[1].match(/^-?\d+$/)){
             writeBlock("G53 G0 Z -2. (Goto Safe Height In Z)")
+            gMotionModal.reset();
+            safeYPosition = getProperty("yAxisSafePosition");
+            writeBlock(gAbsIncModal.format(90), gFormat.format(53), gMotionModal.format(0), "Y" + xyzFormat.format(toPreciseUnit(safeYPosition, MM)), "Z" + xyzFormat.format(toPreciseUnit(-3, MM)));
             writeBlock("G0A"+sText2[1] + "(Rapid movement on a axis)")
           } else{
             invalid = true;
@@ -588,7 +658,7 @@ function defineMachine() {
 }
 // End of machine configuration logic
 
-function onOpen() {
+function onOpen(section) {
   // define and enable machine configuration
   receivedMachineConfiguration = machineConfiguration.isReceived();
 
@@ -600,8 +670,6 @@ function onOpen() {
   if (!getProperty("separateWordsWithSpace")) {
     setWordSeparator("");
   }
-
-  sequenceNumber = getProperty("sequenceNumberStart");
 
   if (programName) {
     writeComment(programName);
@@ -628,10 +696,105 @@ function onOpen() {
     }
   }
 
+  var currentSection = getSection(0);
+
   // dump tool information
   if (getProperty("writeTools")) {
     dumpToolInformation();
   }
+
+
+
+
+
+
+
+  function wcsComment(text) {
+    writeln("( " + text + " )");
+  }
+
+  function fmtZ(val) {
+    return xyzFormat.format(val) + (unit == MM ? " mm" : " in");
+  }
+
+  var bbox     = currentSection.getBoundingBox();
+  var stockTop = currentSection.getParameter("operation:stockZHigh", 0);
+  var stockBot = currentSection.getParameter("operation:stockZLow",  0);
+
+  // WCS Z origin is at Z=0 in WCS space; compare against known references
+  var wcsZ = 0;
+  var tol  = spatial(0.001, MM);
+  var zRef;
+  var tzMax = -999999;
+  var tzMin =  999999;
+  var custom = false;
+  for (var i = 0; i < getNumberOfSections(); i++) {
+    var s = getSection(i);
+    if (s.workOffset == currentSection.workOffset) {
+      var zRange = s.getGlobalZRange();
+      if (zRange.getMaximum() > tzMax) { tzMax = zRange.getMaximum(); }
+      if (zRange.getMinimum() < tzMin) { tzMin = zRange.getMinimum(); }
+    }
+  }
+  if (Math.abs(wcsZ - stockTop) < tol) {
+    zRef = "Stock Top";
+  } else if (Math.abs(wcsZ - stockBot) < tol) {
+    zRef = "Stock Bottom";
+  } else {
+    custom = true;
+    var dStockTop = wcsZ - stockTop;
+    zRef = "Selected Point"
+         + " | " + fmtZ(Math.abs(dStockTop)) + (dStockTop < 0 ? " below" : " above") + " Stock Top"
+  }
+
+  
+
+  var sep = "===================================================";
+  wcsComment(sep);
+  wcsComment("  Z Origin Set To   : " + zRef);
+  wcsComment("  Stock Height                    : " + fmtZ(stockTop-stockBot));
+  if (custom){
+    wcsComment("  Stock Above Origin            : " + fmtZ(stockTop));
+    wcsComment("  Stock Below Origin            : " + fmtZ(stockBot));
+    wcsComment("  Toolpath Z Maximum from origin: " + fmtZ(tzMax));
+    wcsComment("  Toolpath Z Min from origin: " + fmtZ(tzMin));
+    wcsComment("  Toolpath Z Maximum from Stock Top: " + fmtZ(tzMax + dStockTop));
+    wcsComment("  Toolpath Z Min from Stock Top: " + fmtZ(tzMin + dStockTop));
+  } else {
+    wcsComment("  Toolpath Z Maximum from " + zRef + ": " + fmtZ(tzMax));
+    wcsComment("  Toolpath Z Min from " + zRef + ": " + fmtZ(tzMin));
+  }
+  wcsComment("");
+  wcsComment(sep);
+  writeln("");
+
+  var partAttachPoint = currentSection.getPartAttachPoint();
+  var modelPlane = currentSection.getModelPlane();
+
+  var right   = modelPlane.right;
+  var up      = modelPlane.up;
+  // Derive the true Z axis from right and up instead of using forward
+  var forward = Vector.cross(right, up);
+
+  var localPartAttachPoint = new Vector(
+    Vector.dot(partAttachPoint, right),
+    Vector.dot(partAttachPoint, up),
+    Vector.dot(partAttachPoint, forward)
+  );
+  var xoffset = -localPartAttachPoint.x;
+  var yoffset = -localPartAttachPoint.y;
+  var zoffset = -localPartAttachPoint.z;
+  
+  wcsComment("The following values are based on the part position info used in fusion and can be used to roughly align the machine offset from anchor 1 if you use that feature.");
+  wcsComment("  X Offset   : " + fmtZ(xoffset));
+  wcsComment("  Y Offset   : " + fmtZ(yoffset));
+
+  writeln("");
+  wcsComment(sep);
+  writeln("");
+
+
+
 
   if ((getNumberOfSections() > 0) && (getSection(0).workOffset == 0)) {
     for (var i = 0; i < getNumberOfSections(); ++i) {
@@ -698,6 +861,7 @@ function forceWorkPlane() {
 
 var currentAAngle = 0;
 var previousAAngle = 0;
+var toolOrientationUsed = false;
 
 function defineWorkPlane(_section, _setWorkPlane) {
   var abc = new Vector(0, 0, 0);
@@ -712,9 +876,14 @@ function defineWorkPlane(_section, _setWorkPlane) {
     } else {
       abc = getWorkPlaneMachineABC(_section.workPlane);
       if (_setWorkPlane) {
-        setWorkPlane(abc);
+        var tol = 1e-6;
+        if (!getProperty("useManual4thAxisRotations")||(Math.abs(abc.x) > tol || Math.abs(abc.y) > tol || Math.abs(abc.z) > tol)||toolOrientationUsed){
+          setWorkPlane(abc);
+          toolOrientationUsed = true;
+      }
       }
     }
+  
   } else { // pure 3D
     // Inject a 4th axis rotation if the WCS and model plane are not aligned
     if (getProperty("rotate4thAxisRelativeToModelPlane")) {
@@ -739,7 +908,7 @@ function defineWorkPlane(_section, _setWorkPlane) {
       previousAAngle = currentAAngle;
       currentAAngle = calculateAAxisRotation();
 
-      if(currentAAngle - previousAAngle > 0.001) { // Only rotate if the angle change is relevant to avoid unnecessary retracts and moves
+      if(Math.abs(currentAAngle - previousAAngle) > 0.001) { // Only rotate if the angle change is relevant to avoid unnecessary retracts and moves
         writeComment("Retracting to safe position for possible A axis rotation");
         writeRetract(Z, Y);
         var angle = Math.round(currentAAngle * 1000) / 1000;
@@ -750,7 +919,7 @@ function defineWorkPlane(_section, _setWorkPlane) {
 
       if (_setWorkPlane) {
           writeRetract(Z);
-          positionABC(abc, true);
+        positionABC(abc, true);
       }
     }
     if (currentSection && (currentSection.getId() == _section.getId())) {
@@ -998,8 +1167,30 @@ function onSection() {
 
     setCoolant(COOLANT_OFF);
 
+    // Shank diameter change: add S1-S5 to M6 when shaft diameter changed (S1=3.175mm, S2=4mm, S3=6mm, S4=6.35mm, S5=8mm; do not change numbering)
+    // Use shaft segments (Tool tab) to match standard diameter; fallback to tool.shaftDiameter
+    var shaftDiameterMm = getToolShaftDiameterMm(tool);
+    var prevShaftMm = !isFirstSection() ? getToolShaftDiameterMm(getPreviousSection().getTool()) : 0;
+    var shankDiameterChanged = !isFirstSection() && (Math.abs(shaftDiameterMm - prevShaftMm) > 0.001);
+    var shaftParam = (shankDiameterChanged || isFirstSection()) ? getShankSizeSuffix(shaftDiameterMm) : "";
+
     if (tool.number > numberOfToolSlots) {
       warning(localize("Tool number exceeds maximum value."));
+    }
+
+    if (tool.type == TOOL_LASER_CUTTER){
+      writeToolBlock(mFormat.format(321));
+      writeBlock(mFormat.format(3)); 
+      writeBlock("M106")
+      laser_used = true;
+      return;
+    }
+
+    if (laser_used){
+      writeBlock("M5");
+      writeBlock("M107");
+      writeBlock("M322");
+      laser_used = false;
     }
 
     var tloValue = parseTLO(tool.comment);//A is automatic and is the default, M is manual setting (C=0), a number set the value directly (H=-14)
@@ -1011,14 +1202,22 @@ function onSection() {
     }
 
     if (e_manualToolChangeBehavior == "carvAirMtc"){ //any tool number accepted
-      writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
+      var toolChangeParameters = "";
+      if (getProperty("useToolCommentForChangeParameters")){
+        toolChangeParameters = tool.comment;
+      }
+      if (getProperty("issueColletChangeOnShankSizeChange")){
+        toolChangeParameters = toolChangeParameters + " " + shaftParam;
+      }
 
-      if (tool.comment) {
+      writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " " + toolChangeParameters);
+
+      if (tool.comment && !getProperty("useToolCommentForChangeParameters")) {
         writeComment(tool.comment);
       }
-    }else if (e_manualToolChangeBehavior == "carvcomMtc"){
+    } else if (e_manualToolChangeBehavior == "carvcomMtc"){
 
-      if (tloValue) {
+      if (tloValue && !getProperty("useToolCommentForChangeParameters")) {
         if (tloValue === "A") {
             writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " C1");
         } else if (tloValue === "M") {
@@ -1032,7 +1231,15 @@ function onSection() {
             }
         }
       } else {
-          writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
+        var toolChangeParameters = "";
+        if (getProperty("useToolCommentForChangeParameters")){
+          toolChangeParameters = tool.comment;
+        }
+        if (getProperty("issueColletChangeOnShankSizeChange")){
+          toolChangeParameters = toolChangeParameters + " " + shaftParam;
+        }
+
+        writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " " + toolChangeParameters);
       }
     }else if (tool.number > 6 || tool.manualToolChange) {
       writeComment("Manual Tool Change To #" + toolFormat.format(tool.number));
@@ -1040,13 +1247,6 @@ function onSection() {
         writeComment("as a result of manual tool change selected in tool settings");
       }
       performStockManualToolChange(tloValue);
-
-    } else if ((!isFirstSection() && getProperty("useShankSizeForManualChange") && Math.abs(tool.shaftDiameter - getPreviousSection().getTool().shaftDiameter)  >  0.001)){
-
-        writeComment("Manual Tool Change To #" + toolFormat.format(tool.number));
-		    writeComment("as a result of tool shank size change");
-        performStockManualToolChange(tloValue);
-
     } else {
         if (previousToolChangeWasManual && e_manualToolChangeBehavior == "fusionMtc") {
 		      writeComment("Manual Tool Removal as a result of previous manual tool change");
@@ -1096,13 +1296,15 @@ function onSection() {
     (tool.clockwise != getPreviousSection().getTool().clockwise));
   if (spindleChanged) {
     forceSpindleSpeed = false;
-    if (spindleSpeed < 1) {
+    writeComment(tool.type);
+    if (spindleSpeed < 1 && tool.type != TOOL_LASER_CUTTER) {
       error(localize("Spindle speed out of range."));
     }
     if (spindleSpeed > 99999) {
       warning(localize("Spindle speed exceeds maximum value."));
     }
     if (getProperty("defaultUseExternalControl")) {
+      writeBlock(mFormat.format(400));
       writeBlock(mFormat.format(851), pwmOutput.format(100));
     }
     writeBlock(
@@ -1113,6 +1315,20 @@ function onSection() {
   // wcs
   if (insertToolCall) { // force work offset when changing tool
     currentWorkOffset = undefined;
+  }
+  if (currentSection.type == TYPE_JET) {
+    if (tool.type != TOOL_LASER_CUTTER) {
+      error(localize("The CNC does not support the required tool/process. Only laser cutting is supported."));
+    }
+
+    switch (currentSection.jetMode) {
+    case JET_MODE_THROUGH:
+    case JET_MODE_ETCHING:
+    case JET_MODE_VAPORIZE:
+      break;
+    default:
+      error(localize("Unsupported cutting mode."));
+    }
   }
 
   if (currentSection.workOffset != currentWorkOffset) {
@@ -1169,6 +1385,7 @@ function onSection() {
       yOutput.format(initialPosition.y)
     );
   }
+  writeJetCodes(true);
 }
 
 function performStockManualToolChange(tloValue) {
@@ -1217,6 +1434,12 @@ function performStockManualToolChange(tloValue) {
   }
 }
 
+function writeJetCodes(mode) {
+  if (currentSection.type == TYPE_JET && tool.type == TOOL_LASER_CUTTER) {
+    writeBlock(mFormat.format(mode ? 3 : 5)); // activate/deactivate laser
+  }
+}
+
 function onDwell(seconds) {
   if (seconds > 99999.999) {
     warning(localize("Dwelling time is out of range."));
@@ -1226,7 +1449,7 @@ function onDwell(seconds) {
 }
 
 function onSpindleSpeed(spindleSpeed) {
-  writeBlock(sOutput.format(spindleSpeed));
+  writeBlock(sOutput.format(spindleSpeed), mFormat.format(tool.clockwise ? 3 : 4));
 }
 
 var pendingRadiusCompensation = -1;
@@ -1244,7 +1467,7 @@ function onRapid(_x, _y, _z) {
       error(localize("Radius compensation mode cannot be changed at rapid traversal."));
       return;
     }
-    writeBlock(gMotionModal.format(0), x, y, z);
+    writeBlock(gMotionModal.format(0), x, y, z, currentSection.type == TYPE_JET ? powerOutput.format(0) : "");
     feedOutput.reset();
   }
 }
@@ -1265,15 +1488,32 @@ function onLinear(_x, _y, _z, feed) {
       error(localize("Radius compensation mode is not supported."));
       return;
     } else {
-      writeBlock(gMotionModal.format(1), x, y, z, f);
+      writeBlock(gMotionModal.format(1), x, y, z, f, currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
     }
   } else if (f) {
     if (getNextRecord().isMotion()) { // try not to output feed without motion
       feedOutput.reset(); // force feed on next line
     } else {
-      writeBlock(gMotionModal.format(1), f);
+      writeBlock(gMotionModal.format(1), f, currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
     }
   }
+}
+
+function onPower(power) {
+  powerOutput.reset();
+}
+
+function getPower() {
+  switch (currentSection.jetMode) {
+  case JET_MODE_THROUGH:
+    return getProperty("laserPower");
+  case JET_MODE_ETCHING:
+    return getProperty("laserEtchPower");
+  case JET_MODE_VAPORIZE:
+  default:
+    error(localize("Laser cutting mode is not supported."));
+  }
+  return 0;
 }
 
 function getFeed(f) {
@@ -1393,15 +1633,15 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     switch (getCircularPlane()) {
     case PLANE_XY:
       forceCircular(getCircularPlane());
-      writeBlock(gPlaneModal.format(17), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), iOutput.format(cx - start.x), jOutput.format(cy - start.y), feedOutput.format(feed));
+      writeBlock(gPlaneModal.format(17), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), iOutput.format(cx - start.x), jOutput.format(cy - start.y), feedOutput.format(feed), currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
       break;
     case PLANE_ZX:
       forceCircular(getCircularPlane());
-      writeBlock(gPlaneModal.format(18), gMotionModal.format(clockwise ? 2 : 3), zOutput.format(z), iOutput.format(cx - start.x), kOutput.format(cz - start.z), feedOutput.format(feed));
+      writeBlock(gPlaneModal.format(18), gMotionModal.format(clockwise ? 2 : 3), zOutput.format(z), iOutput.format(cx - start.x), kOutput.format(cz - start.z), feedOutput.format(feed), currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
       break;
     case PLANE_YZ:
       forceCircular(getCircularPlane());
-      writeBlock(gPlaneModal.format(19), gMotionModal.format(clockwise ? 2 : 3), yOutput.format(y), jOutput.format(cy - start.y), kOutput.format(cz - start.z), feedOutput.format(feed));
+      writeBlock(gPlaneModal.format(19), gMotionModal.format(clockwise ? 2 : 3), yOutput.format(y), jOutput.format(cy - start.y), kOutput.format(cz - start.z), feedOutput.format(feed), currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
       break;
     default:
       linearize(tolerance);
@@ -1410,15 +1650,15 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     switch (getCircularPlane()) {
     case PLANE_XY:
       forceCircular(getCircularPlane());
-      writeBlock(gPlaneModal.format(17), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), iOutput.format(cx - start.x), jOutput.format(cy - start.y), feedOutput.format(feed));
+      writeBlock(gPlaneModal.format(17), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), iOutput.format(cx - start.x), jOutput.format(cy - start.y), feedOutput.format(feed), currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
       break;
     case PLANE_ZX:
       forceCircular(getCircularPlane());
-      writeBlock(gPlaneModal.format(18), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), iOutput.format(cx - start.x), kOutput.format(cz - start.z), feedOutput.format(feed));
+      writeBlock(gPlaneModal.format(18), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), iOutput.format(cx - start.x), kOutput.format(cz - start.z), feedOutput.format(feed), currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
       break;
     case PLANE_YZ:
       forceCircular(getCircularPlane());
-      writeBlock(gPlaneModal.format(19), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), jOutput.format(cy - start.y), kOutput.format(cz - start.z), feedOutput.format(feed));
+      writeBlock(gPlaneModal.format(19), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), jOutput.format(cy - start.y), kOutput.format(cz - start.z), feedOutput.format(feed), currentSection.type == TYPE_JET ? powerOutput.format(power ? getPower() : 0) : "");
       break;
     default:
       linearize(tolerance);
@@ -1458,14 +1698,26 @@ function onCommand(command) {
     forceSpindleSpeed = true;
     forceCoolant = true;
     if (getProperty("defaultUseExternalControl")) {
+      writeBlock(mFormat.format(400));
       writeBlock(mFormat.format(852));
     }
     return;
+  case COMMAND_POWER_ON:
+    return;
+  case COMMAND_POWER_OFF:
+    return;
+
+  case COMMAND_BREAK_CONTROL:
+    writeComment("Tool Break Test");
+    writeBlock("M491.1");
+    return;
+
   case COMMAND_STOP_SPINDLE:
     writeBlock(mFormat.format(5));
     forceSpindleSpeed = true;
     forceCoolant = true;
     if (getProperty("defaultUseExternalControl")) {
+      writeBlock(mFormat.format(400));
       writeBlock(mFormat.format(852));
     }
     return;
@@ -1475,12 +1727,14 @@ function onCommand(command) {
     forceSpindleSpeed = true;
     forceCoolant = true;
     if (getProperty("defaultUseExternalControl")) {
+      writeBlock(mFormat.format(400));
       writeBlock(mFormat.format(852));
     }
     writeComment("Optional Stop End");
     return;
   case COMMAND_START_SPINDLE:
     if (getProperty("defaultUseExternalControl")) {
+      writeBlock(mFormat.format(400));
       writeBlock(mFormat.format(851), pwmOutput.format(100));
     }
     onCommand(tool.clockwise ? COMMAND_SPINDLE_CLOCKWISE : COMMAND_SPINDLE_COUNTERCLOCKWISE);
@@ -1517,6 +1771,7 @@ function onSectionEnd() {
   if (!isLastSection() && (getNextSection().getTool().coolant != tool.coolant)) {
     setCoolant(COOLANT_OFF);
   }
+  writeJetCodes(false);
   forceAny();
 }
 
@@ -1607,13 +1862,13 @@ function getCoolantCodes(coolant) {
     m = !coolantOff ? coolantCodes.off : coolantOff;
     if (currentCoolantMode == COOLANT_AIR && getProperty("useExtForAirCoolant")) {
       currentCoolantMode = coolant;
-      return [mFormat.format(852)];
+      return [mFormat.format(400), mFormat.format(852)];
     }
   } else {
     coolantOff = coolantCodes.off;
     if (coolant == COOLANT_AIR && getProperty("useExtForAirCoolant")) {
       currentCoolantMode = coolant;
-      return ["M851S100"];
+      return [mFormat.format(400), "M851S100"];
     }
 
     m = coolantCodes.on;
@@ -1681,6 +1936,9 @@ function onReturnFromSafeRetractPosition(_x, _y, _z) {
 // End of onRewindMachine logic
 
 function onClose() {
+  if (laser_used){
+    writeBlock("M322");
+  }
   setCoolant(COOLANT_OFF);
 
   if (machineConfiguration.isMultiAxisConfiguration()) {
