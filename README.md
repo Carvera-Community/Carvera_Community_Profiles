@@ -1,6 +1,6 @@
 This repository manages Carvera profiles such as machine/tool bits settings and post processors for different software profiles
 
-Checkout the [Releases Page](https://github.com/MakeraInc/CarveraProfiles/releases) for downloads.
+Checkout the [Releases Page](https://github.com/Carvera-Community/Carvera_Community_Profiles/releases) for downloads.
 
 ----
 
