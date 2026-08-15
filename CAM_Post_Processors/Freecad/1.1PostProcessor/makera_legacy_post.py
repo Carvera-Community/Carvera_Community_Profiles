@@ -578,6 +578,11 @@ def sendToSmoothie(ip, GCODE, fname):
 
 def parse(pathobj):
     global SPINDLE_SPEED
+    global CURRENT_X
+    global CURRENT_Y
+    global CURRENT_Z
+    global DRILL_RETRACT_MODE
+    global MOTION_MODE
     import sys
     out = ""
     lastcommand = None
