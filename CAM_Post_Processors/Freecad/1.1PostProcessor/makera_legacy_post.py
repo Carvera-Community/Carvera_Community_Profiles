@@ -68,6 +68,11 @@ parser.add_argument(
 )
 parser.add_argument("--precision", default="4", help="number of digits of precision, default=4")
 parser.add_argument(
+    "--inches",
+    action="store_true",
+    help="output in inches instead of mm (default=mm)",
+)
+parser.add_argument(
     "--preamble",
     help='set commands to be issued before the first command, default="G90 G94\nG17"',
 )
