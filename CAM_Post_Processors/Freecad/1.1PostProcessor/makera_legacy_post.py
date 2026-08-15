@@ -676,7 +676,8 @@ def parse(pathobj):
                             param + fmt_num(pos.getValueAs(UNIT_FORMAT), precision_string)
                         )
             if command in ["G1", "G01", "G2", "G02", "G3", "G03"]:
-                outstring.append("S" + str(SPINDLE_SPEED))
+                if "S" not in c.Parameters:
+                    outstring.append("S" + str(SPINDLE_SPEED))
                 if SPINDLE_SPEED <5 :
                     FreeCAD.Console.PrintError(
                         "spindle speed of zero found"
