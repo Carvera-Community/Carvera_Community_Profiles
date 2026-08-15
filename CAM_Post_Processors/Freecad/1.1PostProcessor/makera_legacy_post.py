@@ -784,12 +784,12 @@ def drill_translate(outstring, cmd, params):
     else:
         clear_Z = param_R
 
-    strG0_clear_Z = "G0 Z" + format(float(clear_Z.getValueAs(UNIT_FORMAT)), strFormat) + "\n"
-    strG0_param_R = "G0 Z" + format(float(param_R.getValueAs(UNIT_FORMAT)), strFormat) + "\n"
+    strG0_clear_Z = "G0 Z" + fmt_num(clear_Z.getValueAs(UNIT_FORMAT), strFormat) + "\n"
+    strG0_param_R = "G0 Z" + fmt_num(param_R.getValueAs(UNIT_FORMAT), strFormat) + "\n"
 
     # get the other parameters
     drill_feedrate = Units.Quantity(params["F"], FreeCAD.Units.Velocity)
-    strF_Feedrate = " F" + format(float(drill_feedrate.getValueAs(UNIT_SPEED_FORMAT)), ".2f") + "\n"
+    strF_Feedrate = " F" + fmt_num(drill_feedrate.getValueAs(UNIT_SPEED_FORMAT), ".2f") + "\n"
 
     if cmd == "G83":
         drill_Step = Units.Quantity(params["Q"], FreeCAD.Units.Length)
@@ -818,9 +818,9 @@ def drill_translate(outstring, cmd, params):
             trBuff += strG0_param_R
         trBuff += (
             "G0 X"
-            + format(float(param_X.getValueAs(UNIT_FORMAT)), strFormat)
+            + fmt_num(param_X.getValueAs(UNIT_FORMAT), strFormat)
             + " Y"
-            + format(float(param_Y.getValueAs(UNIT_FORMAT)), strFormat)
+            + fmt_num(param_Y.getValueAs(UNIT_FORMAT), strFormat)
             + "\n"
         )
         if CURRENT_Z > param_R:
@@ -832,7 +832,7 @@ def drill_translate(outstring, cmd, params):
         if cmd in ("G81", "G82"):
             trBuff += (
                 "G1 Z"
-                + format(float(param_Z.getValueAs(UNIT_FORMAT)), strFormat)
+                + fmt_num(param_Z.getValueAs(UNIT_FORMAT), strFormat)
                 + strF_Feedrate
             )
             # pause where applicable
@@ -848,8 +848,8 @@ def drill_translate(outstring, cmd, params):
                         )  # rapid move to just short of last drilling depth
                         trBuff += (
                             "G0 Z"
-                            + format(
-                                float(clearance_depth.getValueAs(UNIT_FORMAT)),
+                            + fmt_num(
+                                clearance_depth.getValueAs(UNIT_FORMAT),
                                 strFormat,
                             )
                             + "\n"
@@ -858,7 +858,7 @@ def drill_translate(outstring, cmd, params):
                     if next_Stop_Z > param_Z:
                         trBuff += (
                             "G1 Z"
-                            + format(float(next_Stop_Z.getValueAs(UNIT_FORMAT)), strFormat)
+                            + fmt_num(next_Stop_Z.getValueAs(UNIT_FORMAT), strFormat)
                             + strF_Feedrate
                         )
                         trBuff += strG0_clear_Z
@@ -866,7 +866,7 @@ def drill_translate(outstring, cmd, params):
                     else:
                         trBuff += (
                             "G1 Z"
-                            + format(float(param_Z.getValueAs(UNIT_FORMAT)), strFormat)
+                            + fmt_num(param_Z.getValueAs(UNIT_FORMAT), strFormat)
                             + strF_Feedrate
                         )
                         trBuff += strG0_clear_Z
