@@ -706,7 +706,7 @@ def parse(pathobj):
 
             if command == "message":
                 if OUTPUT_COMMENTS is False:
-                    out = []
+                    outstring = []
                 else:
                     outstring.pop(0)  # remove the command
 
