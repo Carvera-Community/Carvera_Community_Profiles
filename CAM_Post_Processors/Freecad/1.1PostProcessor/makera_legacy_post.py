@@ -874,7 +874,9 @@ def drill_translate(outstring, cmd, params):
                         break
 
     except Exception as e:
-        pass
+        FreeCAD.Console.PrintError(
+            "drill cycle translation failed: {}\n".format(e)
+        )
 
     if MOTION_MODE == "G91":
         trBuff += "G91"  # Restore if changed
