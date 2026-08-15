@@ -581,6 +581,15 @@ def sendToSmoothie(ip, GCODE, fname):
     FreeCAD.Console.PrintMessage("Upload complete\n")
 
 
+def fmt_num(value, precision_string):
+    # avoid emitting "-0.0000" for values that round to zero, which
+    # causes needless diff churn between otherwise identical files
+    s = format(float(value), precision_string)
+    if s.startswith("-") and float(s) == 0.0:
+        s = s[1:]
+    return s
+
+
 def parse(pathobj):
     global SPINDLE_SPEED
     global CURRENT_X
@@ -646,8 +655,8 @@ def parse(pathobj):
 
                             outstring.append(
                                 param
-                                + format(
-                                    float(speed.getValueAs(UNIT_SPEED_FORMAT)),
+                                + fmt_num(
+                                    speed.getValueAs(UNIT_SPEED_FORMAT),
                                     precision_string,
                                 )
                             )
@@ -664,7 +673,7 @@ def parse(pathobj):
                     else:
                         pos = Units.Quantity(c.Parameters[param], FreeCAD.Units.Length)
                         outstring.append(
-                            param + format(float(pos.getValueAs(UNIT_FORMAT)), precision_string)
+                            param + fmt_num(pos.getValueAs(UNIT_FORMAT), precision_string)
                         )
             if command in ["G1", "G01", "G2", "G02", "G3", "G03"]:
                 outstring.append("S" + str(SPINDLE_SPEED))
