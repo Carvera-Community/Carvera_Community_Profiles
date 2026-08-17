@@ -95,6 +95,14 @@ properties = {
     value      : true,
     scope      : "post"
   },
+  writeStock: {
+    title      : "Write stock and origin",
+    description: "Output machine-readable stock size and WCS origin placement in the header (after the tool list).",
+    group      : "4. File Structure",
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
+  },
   returnClearance: {
     title      : "Return to Clearance",
     description: "Return to clearance position when the job is finished.",
@@ -647,6 +655,244 @@ function dumpToolInformation() {
   }
 }
 
+/**
+  Machine-readable stock / origin header records.
+
+  Examples:
+  (@F360|STOCK|id=cuboid|length=150|width=100|height=10)
+  (@F360|STOCK|id=cylinder|length=70|width=70|height=50|diameter=70)
+  (@F360|ORIGIN|type_name=topFrontLeft|x=-75|y=-50|z=5)
+
+  STOCK:
+    - id: cuboid or cylinder (Fusion tube is emitted as cylinder)
+    - length/width/height: WCS X/Y/Z bounding-box extents in document units
+    - diameter: outer diameter for cylinder (Fusion stock-diameter, else inferred)
+    - omitted when Fusion stock-type is missing or not box/cylinder/tube (e.g. from-solid)
+
+  ORIGIN:
+    - type_name: Fusion stock-box point (27 points) when the origin sits on that grid (or "custom"), ex: topFrontLeft, bottomBackRight
+    - x/y/z: WCS origin relative to the stock center
+*/
+function isValidStockBox(box) {
+  if (!box || (box.lower == undefined) || (box.upper == undefined)) {
+    return false;
+  }
+  var dx = box.upper.x - box.lower.x;
+  var dy = box.upper.y - box.lower.y;
+  var dz = box.upper.z - box.lower.z;
+  if (typeof dx != "number" || typeof dy != "number" || typeof dz != "number") {
+    return false;
+  }
+  if (isNaN(dx) || isNaN(dy) || isNaN(dz)) {
+    return false;
+  }
+  return (dx > 0) && (dy > 0) && (dz > 0);
+}
+
+function getStockBoundingBox() {
+  var box;
+  if (typeof getWorkpiece == "function") {
+    try {
+      box = getWorkpiece();
+    } catch (e) {
+      box = undefined;
+    }
+    if (isValidStockBox(box)) {
+      return box;
+    }
+  }
+
+  if ((typeof hasGlobalParameter == "function") &&
+      hasGlobalParameter("stock-lower-x") && hasGlobalParameter("stock-upper-x") &&
+      hasGlobalParameter("stock-lower-y") && hasGlobalParameter("stock-upper-y") &&
+      hasGlobalParameter("stock-lower-z") && hasGlobalParameter("stock-upper-z")) {
+    box = new BoundingBox(
+      new Vector(
+        getGlobalParameter("stock-lower-x"),
+        getGlobalParameter("stock-lower-y"),
+        getGlobalParameter("stock-lower-z")
+      ),
+      new Vector(
+        getGlobalParameter("stock-upper-x"),
+        getGlobalParameter("stock-upper-y"),
+        getGlobalParameter("stock-upper-z")
+      )
+    );
+    if (isValidStockBox(box)) {
+      return box;
+    }
+  }
+
+  if (getNumberOfSections() > 0) {
+    var section = getSection(0);
+    var xLow = section.getParameter("operation:stockXLow", NaN);
+    var xHigh = section.getParameter("operation:stockXHigh", NaN);
+    var yLow = section.getParameter("operation:stockYLow", NaN);
+    var yHigh = section.getParameter("operation:stockYHigh", NaN);
+    var zLow = section.getParameter("operation:stockZLow", NaN);
+    var zHigh = section.getParameter("operation:stockZHigh", NaN);
+    if (!isNaN(xLow) && !isNaN(xHigh) && !isNaN(yLow) && !isNaN(yHigh) && !isNaN(zLow) && !isNaN(zHigh)) {
+      box = new BoundingBox(new Vector(xLow, yLow, zLow), new Vector(xHigh, yHigh, zHigh));
+      if (isValidStockBox(box)) {
+        return box;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function getFusionStockType() {
+  if ((typeof hasGlobalParameter == "function") && hasGlobalParameter("stock-type")) {
+    return String(getGlobalParameter("stock-type")).toLowerCase();
+  }
+  return "";
+}
+
+function stockIdFromFusionType(fusionType) {
+  if (fusionType == "box") {
+    return "cuboid";
+  }
+  if ((fusionType == "cylinder") || (fusionType == "tube")) {
+    return "cylinder";
+  }
+  return undefined;
+}
+
+function getPositiveGlobalNumber(name) {
+  if ((typeof hasGlobalParameter != "function") || !hasGlobalParameter(name)) {
+    return undefined;
+  }
+  var value = Number(getGlobalParameter(name));
+  if ((typeof value != "number") || isNaN(value) || !(value > 0)) {
+    return undefined;
+  }
+  return value;
+}
+
+function inferRadialDiameter(length, width, height) {
+  var xy = Math.abs(length - width);
+  var xz = Math.abs(length - height);
+  var yz = Math.abs(width - height);
+  if ((xy <= xz) && (xy <= yz)) {
+    return (length + width) / 2;
+  }
+  if (xz <= yz) {
+    return (length + height) / 2;
+  }
+  return (width + height) / 2;
+}
+
+function getStockDiameter(length, width, height) {
+  var diameter = getPositiveGlobalNumber("stock-diameter");
+  if (diameter != undefined) {
+    return diameter;
+  }
+  return inferRadialDiameter(length, width, height);
+}
+
+function classifyOriginSide(originFromCenter, halfSize, tolerance) {
+  if (!(halfSize > 0)) {
+    return (Math.abs(originFromCenter) <= tolerance) ? 0 : undefined;
+  }
+  var sides = [-1, 0, 1];
+  var positions = [-halfSize, 0, halfSize];
+  var bestSide = 0;
+  var bestDist = Math.abs(originFromCenter - positions[1]);
+  var i;
+  for (i = 0; i < sides.length; ++i) {
+    var dist = Math.abs(originFromCenter - positions[i]);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestSide = sides[i];
+    }
+  }
+  return (bestDist <= tolerance) ? bestSide : undefined;
+}
+
+function originTypeName(xSide, ySide, zSide) {
+  if ((xSide == undefined) || (ySide == undefined) || (zSide == undefined)) {
+    return "custom";
+  }
+  var parts = [];
+  if (zSide < 0) {
+    parts.push("bottom");
+  } else if (zSide > 0) {
+    parts.push("top");
+  }
+  if (ySide < 0) {
+    parts.push("front");
+  } else if (ySide > 0) {
+    parts.push("back");
+  }
+  if (xSide < 0) {
+    parts.push("left");
+  } else if (xSide > 0) {
+    parts.push("right");
+  }
+  if (parts.length == 0) {
+    return "center";
+  }
+  var name = parts[0];
+  var i;
+  for (i = 1; i < parts.length; ++i) {
+    name += parts[i].charAt(0).toUpperCase() + parts[i].substring(1);
+  }
+  if (parts.length == 1) {
+    name += "Center";
+  }
+  return name;
+}
+
+function dumpStockInformation() {
+  var stockId = stockIdFromFusionType(getFusionStockType());
+  if (!stockId) {
+    return;
+  }
+
+  var box = getStockBoundingBox();
+  if (!isValidStockBox(box)) {
+    return;
+  }
+
+  var length = box.upper.x - box.lower.x;
+  var width = box.upper.y - box.lower.y;
+  var height = box.upper.z - box.lower.z;
+  var originX = -((box.lower.x + box.upper.x) / 2);
+  var originY = -((box.lower.y + box.upper.y) / 2);
+  var originZ = -((box.lower.z + box.upper.z) / 2);
+  var stockParts = [
+    "@F360",
+    "STOCK",
+    "id=" + stockId,
+    "length=" + xyzFormat.format(length),
+    "width=" + xyzFormat.format(width),
+    "height=" + xyzFormat.format(height)
+  ];
+  if (stockId == "cylinder") {
+    stockParts.push("diameter=" + xyzFormat.format(getStockDiameter(length, width, height)));
+  }
+  writeComment(stockParts.join("|"));
+
+  var halfX = length / 2;
+  var halfY = width / 2;
+  var halfZ = height / 2;
+  var tol = Math.max(spatial(0.05, MM), 0.002 * Math.max(length, width, height));
+  var xSide = classifyOriginSide(originX, halfX, tol);
+  var ySide = classifyOriginSide(originY, halfY, tol);
+  var zSide = classifyOriginSide(originZ, halfZ, tol);
+  var typeName = originTypeName(xSide, ySide, zSide);
+  var originParts = [
+    "@F360",
+    "ORIGIN",
+    "type_name=" + typeName,
+    "x=" + xyzFormat.format(originX),
+    "y=" + xyzFormat.format(originY),
+    "z=" + xyzFormat.format(originZ)
+  ];
+  writeComment(originParts.join("|"));
+}
+
 function defineMachine() {
   if (false) { // note: setup your machine here
     var aAxis = createAxis({coordinate:0, table:true, axis:[1, 0, 0], cyclic:true, tcp:false});
@@ -742,6 +988,10 @@ function onOpen(section) {
   // dump tool information
   if (getProperty("writeTools")) {
     dumpToolInformation();
+  }
+
+  if (getProperty("writeStock")) {
+    dumpStockInformation();
   }
 
 
@@ -1208,6 +1458,9 @@ function onSection() {
 
     if(getProperty("splitFile") == "toolpath" && getProperty("splitFileHeader")) {
       dumpToolInformation();
+      if (getProperty("writeStock")) {
+        dumpStockInformation();
+      }
     }
 
     setCoolant(COOLANT_OFF);
