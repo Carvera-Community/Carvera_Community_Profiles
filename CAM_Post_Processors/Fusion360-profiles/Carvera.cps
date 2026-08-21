@@ -249,7 +249,7 @@ var coolants = [
   {id:COOLANT_MIST},
   {id:COOLANT_THROUGH_TOOL},
   {id:COOLANT_AIR, on:[400,7]},
-  {id:COOLANT_AIR_THROUGH_TOOL},
+  {id:COOLANT_AIR_THROUGH_TOOL, on: "M811 S100", off: "M812"}, // spindle fan 100% for z1
   {id:COOLANT_SUCTION},
   {id:COOLANT_FLOOD_MIST},
   {id:COOLANT_FLOOD_THROUGH_TOOL},
