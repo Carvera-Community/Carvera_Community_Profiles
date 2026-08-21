@@ -659,14 +659,14 @@ function dumpToolInformation() {
   Machine-readable stock / origin header records.
 
   Examples:
-  (@F360|STOCK|id=cuboid|length=150|width=100|height=10)
-  (@F360|STOCK|id=cylinder|length=70|width=70|height=50|diameter=70)
+  (@F360|STOCK|id=box|width=150|depth=100|height=10)
+  (@F360|STOCK|id=cylinder|width=70|depth=70|height=50|diameter=70)
   (@F360|ORIGIN|type_name=topFrontLeft|x=-75|y=-50|z=5)
 
   STOCK:
-    - id: cuboid or cylinder (Fusion tube is emitted as cylinder)
-    - length/width/height: WCS X/Y/Z bounding-box extents in document units
-    - diameter: outer diameter for cylinder (Fusion stock-diameter, else inferred)
+    - id: Fusion stock-type (box, cylinder, or tube)
+    - width/depth/height: WCS X/Y/Z extents (Fusion Width/Depth/Height)
+    - diameter: outer diameter for cylinder/tube (Fusion stock-diameter, else inferred)
     - omitted when Fusion stock-type is missing or not box/cylinder/tube (e.g. from-solid)
 
   ORIGIN:
@@ -750,11 +750,8 @@ function getFusionStockType() {
 }
 
 function stockIdFromFusionType(fusionType) {
-  if (fusionType == "box") {
-    return "cuboid";
-  }
-  if ((fusionType == "cylinder") || (fusionType == "tube")) {
-    return "cylinder";
+  if ((fusionType == "box") || (fusionType == "cylinder") || (fusionType == "tube")) {
+    return fusionType;
   }
   return undefined;
 }
@@ -770,25 +767,25 @@ function getPositiveGlobalNumber(name) {
   return value;
 }
 
-function inferRadialDiameter(length, width, height) {
-  var xy = Math.abs(length - width);
-  var xz = Math.abs(length - height);
-  var yz = Math.abs(width - height);
+function inferRadialDiameter(width, depth, height) {
+  var xy = Math.abs(width - depth);
+  var xz = Math.abs(width - height);
+  var yz = Math.abs(depth - height);
   if ((xy <= xz) && (xy <= yz)) {
-    return (length + width) / 2;
+    return (width + depth) / 2;
   }
   if (xz <= yz) {
-    return (length + height) / 2;
+    return (width + height) / 2;
   }
-  return (width + height) / 2;
+  return (depth + height) / 2;
 }
 
-function getStockDiameter(length, width, height) {
+function getStockDiameter(width, depth, height) {
   var diameter = getPositiveGlobalNumber("stock-diameter");
   if (diameter != undefined) {
     return diameter;
   }
-  return inferRadialDiameter(length, width, height);
+  return inferRadialDiameter(width, depth, height);
 }
 
 function classifyOriginSide(originFromCenter, halfSize, tolerance) {
@@ -855,8 +852,8 @@ function dumpStockInformation() {
     return;
   }
 
-  var length = box.upper.x - box.lower.x;
-  var width = box.upper.y - box.lower.y;
+  var width = box.upper.x - box.lower.x;
+  var depth = box.upper.y - box.lower.y;
   var height = box.upper.z - box.lower.z;
   var originX = -((box.lower.x + box.upper.x) / 2);
   var originY = -((box.lower.y + box.upper.y) / 2);
@@ -865,19 +862,19 @@ function dumpStockInformation() {
     "@F360",
     "STOCK",
     "id=" + stockId,
-    "length=" + xyzFormat.format(length),
     "width=" + xyzFormat.format(width),
+    "depth=" + xyzFormat.format(depth),
     "height=" + xyzFormat.format(height)
   ];
-  if (stockId == "cylinder") {
-    stockParts.push("diameter=" + xyzFormat.format(getStockDiameter(length, width, height)));
+  if ((stockId == "cylinder") || (stockId == "tube")) {
+    stockParts.push("diameter=" + xyzFormat.format(getStockDiameter(width, depth, height)));
   }
   writeComment(stockParts.join("|"));
 
-  var halfX = length / 2;
-  var halfY = width / 2;
+  var halfX = width / 2;
+  var halfY = depth / 2;
   var halfZ = height / 2;
-  var tol = Math.max(spatial(0.05, MM), 0.002 * Math.max(length, width, height));
+  var tol = Math.max(spatial(0.05, MM), 0.002 * Math.max(width, depth, height));
   var xSide = classifyOriginSide(originX, halfX, tol);
   var ySide = classifyOriginSide(originY, halfY, tol);
   var zSide = classifyOriginSide(originZ, halfZ, tol);
