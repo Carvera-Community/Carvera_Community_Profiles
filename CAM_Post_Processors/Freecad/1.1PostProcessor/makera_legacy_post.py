@@ -48,6 +48,17 @@ now = datetime.datetime.now()
 parser = argparse.ArgumentParser(prog="linuxcnc", add_help=False)
 parser.add_argument("--header", action="store_true", help="output headers (default)")
 parser.add_argument("--no-header", action="store_true", help="suppress header output")
+parser.add_argument(
+    "--timestamp",
+    action="store_true",
+    help="include the current date/time in the header (default)",
+)
+parser.add_argument(
+    "--no-timestamp",
+    action="store_true",
+    help="suppress the current date/time in the header, keeping the rest "
+    "(tool table, etc.) - useful for diff-stable output",
+)
 parser.add_argument("--comments", action="store_true", help="output comment (default)")
 parser.add_argument("--no-comments", action="store_true", help="suppress comment output")
 parser.add_argument("--line-numbers", action="store_true", help="prefix with line numbers")
@@ -92,6 +103,7 @@ TOOLTIP_ARGS = parser.format_help()
 # These globals set common customization preferences
 OUTPUT_COMMENTS = True
 OUTPUT_HEADER = True
+OUTPUT_TIMESTAMP = True
 IP_ADDR = None
 VERBOSE = False
 
@@ -359,6 +371,7 @@ def dump_tool_table(objectslist):
 
 def processArguments(argstring):
     global OUTPUT_HEADER
+    global OUTPUT_TIMESTAMP
     global OUTPUT_COMMENTS
     global SHOW_EDITOR
     global IP_ADDR
@@ -377,6 +390,10 @@ def processArguments(argstring):
             OUTPUT_HEADER = False
         if args.header:
             OUTPUT_HEADER = True
+        if args.no_timestamp:
+            OUTPUT_TIMESTAMP = False
+        if args.timestamp:
+            OUTPUT_TIMESTAMP = True
         if args.no_comments:
             OUTPUT_COMMENTS = False
         if args.comments:
@@ -439,7 +456,8 @@ def export(objectslist, filename, argstring):
     if OUTPUT_HEADER:
         gcode += "(Exported by FreeCAD)\n"
         gcode += "(Post Processor: " + __name__ + ")\n"
-        gcode += "(Output Time:" + str(now) + ")\n"
+        if OUTPUT_TIMESTAMP:
+            gcode += "(Output Time:" + str(now) + ")\n"
         gcode += dump_tool_table(objectslist)
 
     # Write the preamble
