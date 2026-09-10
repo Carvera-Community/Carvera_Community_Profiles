@@ -11,6 +11,9 @@
     "Length": "38.000 mm",
     "Pitch": "0.450 mm",
     "cuttingAngle": "60",
+    "NeckDiameter": "1.180577 mm",
+    "NeckLength": "7.5 mm",
+    "Crest": "0 mm",
     "ShankDiameter": "3.175",
     "Material": "Carbide",
     "Flutes": "3"

@@ -5,6 +5,7 @@ import os
 import re
 import unicodedata
 import argparse
+from threadmill_geometry import threadmill_parameters
 
 # ------------------------------------------------------------
 # Argument parsing
@@ -20,6 +21,11 @@ parser.add_argument(
     "--dry-run",
     action="store_true",
     help="Perform a trial run with no file writes"
+)
+parser.add_argument(
+    "--threadmill-library",
+    metavar="FILE",
+    help="HSM library for thread-mill geometry (default: repository library)"
 )
 args = parser.parse_args()
 
@@ -261,6 +267,9 @@ def convert_row_to_json(row):
         formatted = format_with_units(crest, unit)
         if formatted:
             parameter["Crest"] = formatted
+
+    if toolType == "thread mill":
+        parameter.update(threadmill_parameters(row, args.threadmill_library, prefer_library=True))
 
     parameter["ShankDiameter"] = get_value("Shaft Diameter (tool_shaftDiameter)")
     parameter["Material"] = "Carbide"
