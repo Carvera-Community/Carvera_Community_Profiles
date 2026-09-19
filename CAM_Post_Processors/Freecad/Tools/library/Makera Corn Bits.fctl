@@ -1,0 +1,166 @@
+{
+  "label": "Makera Corn Bits",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.6_3mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.6_3mm_PCB.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.7_4mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.7_4mm_PCB.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.8_5.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.8_5.5mm_PCB.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.9_6mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_TiN_Coating_Corn_Bit_0.9_6mm_PCB.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_TiN_Coating_Corn_Bit_1_7mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 10,
+      "path": "Makera_TiN_Coating_Corn_Bit_1_7mm_PCB.fctb"
+    },
+    {
+      "nr": 11,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.1_7mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 12,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.1_7mm_PCB.fctb"
+    },
+    {
+      "nr": 13,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.2_7mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 14,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.2_7mm_PCB.fctb"
+    },
+    {
+      "nr": 15,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.3_7.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 16,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.3_7.5mm_PCB.fctb"
+    },
+    {
+      "nr": 17,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.4_7.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 18,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.4_7.5mm_PCB.fctb"
+    },
+    {
+      "nr": 19,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.5_8.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 20,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.5_8.5mm_PCB.fctb"
+    },
+    {
+      "nr": 21,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.6_8.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 22,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.6_8.5mm_PCB.fctb"
+    },
+    {
+      "nr": 23,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.7_9.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 24,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.7_9.5mm_PCB.fctb"
+    },
+    {
+      "nr": 25,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.8_9.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 26,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.8_9.5mm_PCB.fctb"
+    },
+    {
+      "nr": 27,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.9_9.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 28,
+      "path": "Makera_TiN_Coating_Corn_Bit_1.9_9.5mm_PCB.fctb"
+    },
+    {
+      "nr": 29,
+      "path": "Makera_TiN_Coating_Corn_Bit_2_10.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 30,
+      "path": "Makera_TiN_Coating_Corn_Bit_2_10.5mm_PCB.fctb"
+    },
+    {
+      "nr": 31,
+      "path": "Makera_TiN_Coating_Corn_Bit_2.1_10.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 32,
+      "path": "Makera_TiN_Coating_Corn_Bit_2.1_10.5mm_PCB.fctb"
+    },
+    {
+      "nr": 33,
+      "path": "Makera_TiN_Coating_Corn_Bit_2.4_10.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 34,
+      "path": "Makera_TiN_Coating_Corn_Bit_2.4_10.5mm_PCB.fctb"
+    },
+    {
+      "nr": 35,
+      "path": "Makera_TiN_Coating_Corn_Bit_2.5_10.5mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 36,
+      "path": "Makera_TiN_Coating_Corn_Bit_2.5_10.5mm_PCB.fctb"
+    },
+    {
+      "nr": 37,
+      "path": "Makera_TiN_Coating_Corn_Bit_3_12mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 38,
+      "path": "Makera_TiN_Coating_Corn_Bit_3_12mm_PCB.fctb"
+    },
+    {
+      "nr": 39,
+      "path": "Makera_TiN_Coating_Corn_Bit_3.175_12mm_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 40,
+      "path": "Makera_TiN_Coating_Corn_Bit_3.175_12mm_PCB.fctb"
+    }
+  ],
+  "version": 1
+}

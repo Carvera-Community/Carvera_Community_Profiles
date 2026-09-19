@@ -1,0 +1,198 @@
+{
+  "label": "Makera Thread Mills",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_Carvera_M1_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_Carvera_M1_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_Carvera_M1_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_Carvera_M1_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_Carvera_M1_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_Carvera_M1_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_Carvera_M2_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_Carvera_M2_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_Carvera_M2_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 10,
+      "path": "Makera_Carvera_M2_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 11,
+      "path": "Makera_Carvera_M2_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 12,
+      "path": "Makera_Carvera_M2_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 13,
+      "path": "Makera_Carvera_M2.5_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 14,
+      "path": "Makera_Carvera_M2.5_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 15,
+      "path": "Makera_Carvera_M2.5_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 16,
+      "path": "Makera_Carvera_M2.5_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 17,
+      "path": "Makera_Carvera_M2.5_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 18,
+      "path": "Makera_Carvera_M2.5_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 19,
+      "path": "Makera_Carvera_M3_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 20,
+      "path": "Makera_Carvera_M3_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 21,
+      "path": "Makera_Carvera_M3_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 22,
+      "path": "Makera_Carvera_M3_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 23,
+      "path": "Makera_Carvera_M3_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 24,
+      "path": "Makera_Carvera_M3_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 25,
+      "path": "Makera_Carvera_M4_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 26,
+      "path": "Makera_Carvera_M4_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 27,
+      "path": "Makera_Carvera_M4_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 28,
+      "path": "Makera_Carvera_M4_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 29,
+      "path": "Makera_Carvera_M4_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 30,
+      "path": "Makera_Carvera_M4_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 31,
+      "path": "Makera_Carvera_M5_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 32,
+      "path": "Makera_Carvera_M5_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 33,
+      "path": "Makera_Carvera_M5_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 34,
+      "path": "Makera_Carvera_M5_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 35,
+      "path": "Makera_Carvera_M5_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 36,
+      "path": "Makera_Carvera_M5_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 37,
+      "path": "Makera_Carvera_M6_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 38,
+      "path": "Makera_Carvera_M6_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 39,
+      "path": "Makera_Carvera_M6_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 40,
+      "path": "Makera_Carvera_M6_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 41,
+      "path": "Makera_Carvera_M6_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 42,
+      "path": "Makera_Carvera_M6_Threadmill_Brass.fctb"
+    },
+    {
+      "nr": 43,
+      "path": "Makera_Carvera_M8_Threadmill_Plastic.fctb"
+    },
+    {
+      "nr": 44,
+      "path": "Makera_Carvera_M8_Threadmill_Hardwood.fctb"
+    },
+    {
+      "nr": 45,
+      "path": "Makera_Carvera_M8_Threadmill_Softwood.fctb"
+    },
+    {
+      "nr": 46,
+      "path": "Makera_Carvera_M8_Threadmill_Aluminum.fctb"
+    },
+    {
+      "nr": 47,
+      "path": "Makera_Carvera_M8_Threadmill_Copper.fctb"
+    },
+    {
+      "nr": 48,
+      "path": "Makera_Carvera_M8_Threadmill_Brass.fctb"
+    }
+  ],
+  "version": 1
+}

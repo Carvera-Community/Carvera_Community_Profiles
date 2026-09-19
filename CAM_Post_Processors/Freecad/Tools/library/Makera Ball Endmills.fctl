@@ -1,0 +1,306 @@
+{
+  "label": "Makera Ball Endmills",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_Makera_Metal_-_1_3mm_Aluminum.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_Makera_Metal_-_1_3mm_Brass.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_Makera_Metal_-_1_3mm_Copper.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_Makera_Metal_-_1_3mm_Hardwood.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_Makera_Metal_-_1_3mm_Softwood.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_Makera_Metal_-_1_3mm_Plastic.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_Makera_Metal_-_1.5_4.5mm_Aluminum.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_Makera_Metal_-_1.5_4.5mm_Brass.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_Makera_Metal_-_1.5_4.5mm_Copper.fctb"
+    },
+    {
+      "nr": 10,
+      "path": "Makera_Makera_Metal_-_1.5_4.5mm_Hardwood.fctb"
+    },
+    {
+      "nr": 11,
+      "path": "Makera_Makera_Metal_-_1.5_4.5mm_Softwood.fctb"
+    },
+    {
+      "nr": 12,
+      "path": "Makera_Makera_Metal_-_1.5_4.5mm_Plastic.fctb"
+    },
+    {
+      "nr": 13,
+      "path": "Makera_Makera_Metal_-_2_6mm_Aluminum.fctb"
+    },
+    {
+      "nr": 14,
+      "path": "Makera_Makera_Metal_-_2_6mm_Brass.fctb"
+    },
+    {
+      "nr": 15,
+      "path": "Makera_Makera_Metal_-_2_6mm_Copper.fctb"
+    },
+    {
+      "nr": 16,
+      "path": "Makera_Makera_Metal_-_2_6mm_Hardwood.fctb"
+    },
+    {
+      "nr": 17,
+      "path": "Makera_Makera_Metal_-_2_6mm_Softwood.fctb"
+    },
+    {
+      "nr": 18,
+      "path": "Makera_Makera_Metal_-_2_6mm_Plastic.fctb"
+    },
+    {
+      "nr": 19,
+      "path": "Makera_Makera_Metal_-_2.5_7.5mm_Aluminum.fctb"
+    },
+    {
+      "nr": 20,
+      "path": "Makera_Makera_Metal_-_2.5_7.5mm_Brass.fctb"
+    },
+    {
+      "nr": 21,
+      "path": "Makera_Makera_Metal_-_2.5_7.5mm_Copper.fctb"
+    },
+    {
+      "nr": 22,
+      "path": "Makera_Makera_Metal_-_2.5_7.5mm_Hardwood.fctb"
+    },
+    {
+      "nr": 23,
+      "path": "Makera_Makera_Metal_-_2.5_7.5mm_Plastic.fctb"
+    },
+    {
+      "nr": 24,
+      "path": "Makera_Makera_Metal_-_2.5_7.5mm_Softwood.fctb"
+    },
+    {
+      "nr": 25,
+      "path": "Makera_Makera_Metal_-_3.175_10mm_Aluminum.fctb"
+    },
+    {
+      "nr": 26,
+      "path": "Makera_Makera_Metal_-_3.175_10mm_Brass.fctb"
+    },
+    {
+      "nr": 27,
+      "path": "Makera_Makera_Metal_-_3.175_10mm_Copper.fctb"
+    },
+    {
+      "nr": 28,
+      "path": "Makera_Makera_Metal_-_3.175_10mm_Hardwood.fctb"
+    },
+    {
+      "nr": 29,
+      "path": "Makera_Makera_Metal_-_3.175_10mm_Plastic.fctb"
+    },
+    {
+      "nr": 30,
+      "path": "Makera_Makera_Metal_-_3.175_10mm_Softwood.fctb"
+    },
+    {
+      "nr": 31,
+      "path": "Makera_2_Flute_Ball_Nose_1_4mm_Hardwood.fctb"
+    },
+    {
+      "nr": 32,
+      "path": "Makera_2_Flute_Ball_Nose_1_4mm_Softwood.fctb"
+    },
+    {
+      "nr": 33,
+      "path": "Makera_2_Flute_Ball_Nose_1_4mm_Plastic.fctb"
+    },
+    {
+      "nr": 34,
+      "path": "Makera_2_Flute_Ball_Nose_1.5_8mm_Hardwood.fctb"
+    },
+    {
+      "nr": 35,
+      "path": "Makera_2_Flute_Ball_Nose_1.5_8mm_Softwood.fctb"
+    },
+    {
+      "nr": 36,
+      "path": "Makera_2_Flute_Ball_Nose_1.5_8mm_Plastic.fctb"
+    },
+    {
+      "nr": 37,
+      "path": "Makera_2_Flute_Ball_Nose_2_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 38,
+      "path": "Makera_2_Flute_Ball_Nose_2_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 39,
+      "path": "Makera_2_Flute_Ball_Nose_2_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 40,
+      "path": "Makera_2_Flute_Ball_Nose_2.5_15mm_Hardwood.fctb"
+    },
+    {
+      "nr": 41,
+      "path": "Makera_2_Flute_Ball_Nose_2.5_15mm_Softwood.fctb"
+    },
+    {
+      "nr": 42,
+      "path": "Makera_2_Flute_Ball_Nose_2.5_15mm_Plastic.fctb"
+    },
+    {
+      "nr": 43,
+      "path": "Makera_2_Flute_Ball_Nose_3.175_22_Hardwood.fctb"
+    },
+    {
+      "nr": 44,
+      "path": "Makera_2_Flute_Ball_Nose_3.175_22_Softwood.fctb"
+    },
+    {
+      "nr": 45,
+      "path": "Makera_2_Flute_Ball_Nose_3.175_22_Plastic.fctb"
+    },
+    {
+      "nr": 46,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_6_18mm_Aluminum.fctb"
+    },
+    {
+      "nr": 47,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_6_18mm_Brass.fctb"
+    },
+    {
+      "nr": 48,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_6_18mm_Copper.fctb"
+    },
+    {
+      "nr": 49,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_6_18mm_Hardwood.fctb"
+    },
+    {
+      "nr": 50,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_6_18mm_Plastic.fctb"
+    },
+    {
+      "nr": 51,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_6_18mm_Softwood.fctb"
+    },
+    {
+      "nr": 52,
+      "path": "Makera_Makera_Ball_Endmill_-_6_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 53,
+      "path": "Makera_Makera_Ball_Endmill_-_6_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 54,
+      "path": "Makera_Makera_Ball_Endmill_-_6_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 55,
+      "path": "Makera_Makera_Ball_Endmill_-_6_22mm_Hardwood.fctb"
+    },
+    {
+      "nr": 56,
+      "path": "Makera_Makera_Ball_Endmill_-_6_22mm_Plastic.fctb"
+    },
+    {
+      "nr": 57,
+      "path": "Makera_Makera_Ball_Endmill_-_6_22mm_Softwood.fctb"
+    },
+    {
+      "nr": 58,
+      "path": "Makera_Makera_Ball_Endmill_-_6_32mm_Hardwood.fctb"
+    },
+    {
+      "nr": 59,
+      "path": "Makera_Makera_Ball_Endmill_-_6_32mm_Plastic.fctb"
+    },
+    {
+      "nr": 60,
+      "path": "Makera_Makera_Ball_Endmill_-_6_32mm_Softwood.fctb"
+    },
+    {
+      "nr": 61,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_4_12mm_Aluminum.fctb"
+    },
+    {
+      "nr": 62,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_4_12mm_Brass.fctb"
+    },
+    {
+      "nr": 63,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_4_12mm_Copper.fctb"
+    },
+    {
+      "nr": 64,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_4_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 65,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_4_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 66,
+      "path": "Makera_Makera_Ball_Endmill_Metal_-_4_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 67,
+      "path": "Makera_Makera_Ball_Endmill_-_4_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 68,
+      "path": "Makera_Makera_Ball_Endmill_-_4_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 69,
+      "path": "Makera_Makera_Ball_Endmill_-_4_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 70,
+      "path": "Makera_Makera_Ball_Endmill_-_4_22mm_Hardwood.fctb"
+    },
+    {
+      "nr": 71,
+      "path": "Makera_Makera_Ball_Endmill_-_4_22mm_Plastic.fctb"
+    },
+    {
+      "nr": 72,
+      "path": "Makera_Makera_Ball_Endmill_-_4_22mm_Softwood.fctb"
+    },
+    {
+      "nr": 73,
+      "path": "Makera_Makera_Ball_Endmill_-_4_32mm_Hardwood.fctb"
+    },
+    {
+      "nr": 74,
+      "path": "Makera_Makera_Ball_Endmill_-_4_32mm_Plastic.fctb"
+    },
+    {
+      "nr": 75,
+      "path": "Makera_Makera_Ball_Endmill_-_4_32mm_Softwood.fctb"
+    }
+  ],
+  "version": 1
+}

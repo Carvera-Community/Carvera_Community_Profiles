@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "name": "Makera_Chamfering Bit - 1/8\u2033 Shank_Carbon Fiber",
+  "shape": "chamfer.fcstd",
+  "shape-type": "Chamfer",
+  "parameter": {
+    "Chipload": "20.83 \u00b5m",
+    "CuttingEdgeHeight": "3.000 mm",
+    "CuttingEdgeLength": "3.000 mm",
+    "Diameter": "3.175 mm",
+    "Length": "38.000 mm",
+    "CuttingEdgeAngle": 90.0,
+    "TipDiameter": "0.100 mm",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "chamfer mill",
+    "Description": "Chamfering Bit - 1/8\u2033 Shank",
+    "Vendor": "Makera",
+    "cutting_feedrate": "500",
+    "lead_in_feedrate": "500",
+    "plunge_feedrate": "200",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "2",
+    "spindleSpeed": "12000",
+    "stepdown": "0.1",
+    "stepover": "0.1"
+  }
+}

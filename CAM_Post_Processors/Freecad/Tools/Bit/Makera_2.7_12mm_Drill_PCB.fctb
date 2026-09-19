@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "Makera_2.7*12mm Drill_PCB",
+  "shape": "drill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "20.00 \u00b5m",
+    "CuttingEdgeHeight": "12.000 mm",
+    "CuttingEdgeLength": "12.000 mm",
+    "Diameter": "2.700 mm",
+    "Length": "38.000 mm",
+    "CuttingEdgeAngle": 236.0,
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "drill",
+    "Description": "2.7*12mm Drill",
+    "Vendor": "Makera",
+    "plunge_feedrate": "200",
+    "rampAngle": "2",
+    "spindleSpeed": "10000"
+  }
+}

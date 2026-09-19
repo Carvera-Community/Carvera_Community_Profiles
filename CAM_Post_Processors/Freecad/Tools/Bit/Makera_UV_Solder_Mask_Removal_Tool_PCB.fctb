@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "Makera_UV Solder Mask Removal Tool_PCB",
+  "shape": "v-bit.fcstd",
+  "shape-type": "VBit",
+  "parameter": {
+    "Chipload": "50.00 \u00b5m",
+    "CuttingEdgeHeight": "3.000 mm",
+    "CuttingEdgeLength": "3.000 mm",
+    "Diameter": "2.000 mm",
+    "Length": "46.000 mm",
+    "CuttingEdgeAngle": 30.0,
+    "TipDiameter": "0.300 mm",
+    "ShankDiameter": "6",
+    "Material": "Carbide",
+    "Flutes": "1"
+  },
+  "attribute": {
+    "ToolType": "chamfer mill",
+    "Description": "UV Solder Mask Removal Tool",
+    "Vendor": "Makera",
+    "cutting_feedrate": "400",
+    "lead_in_feedrate": "400",
+    "plunge_feedrate": "200",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "2",
+    "spindleSpeed": "8000",
+    "stepdown": "0.2"
+  }
+}

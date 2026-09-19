@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "Makera_Makera Metal - 2.5*7.5mm_Brass",
+  "shape": "Ballend.fcstd",
+  "shape-type": "Ballend",
+  "parameter": {
+    "Chipload": "20.83 \u00b5m",
+    "CuttingEdgeHeight": "7.500 mm",
+    "CuttingEdgeLength": "7.500 mm",
+    "Diameter": "2.500 mm",
+    "Length": "38.000 mm",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "ball end mill",
+    "Description": "Makera Metal - 2.5*7.5mm",
+    "Vendor": "Makera",
+    "cutting_feedrate": "500",
+    "lead_in_feedrate": "500",
+    "plunge_feedrate": "200",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.8",
+    "spindleSpeed": "12000",
+    "stepdown": "0.1",
+    "stepover": "0.357143"
+  }
+}

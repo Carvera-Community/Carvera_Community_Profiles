@@ -1,0 +1,966 @@
+{
+  "label": "Makera Drill Bits",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_0.2_3.5mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_0.2_3.5mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_0.2_3.5mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_0.2_3.5mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_0.2_3.5mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_0.2_3.5mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_0.2_3.5mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_0.2_3.5mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_0.3_5.5mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 10,
+      "path": "Makera_0.3_5.5mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 11,
+      "path": "Makera_0.3_5.5mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 12,
+      "path": "Makera_0.3_5.5mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 13,
+      "path": "Makera_0.3_5.5mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 14,
+      "path": "Makera_0.3_5.5mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 15,
+      "path": "Makera_0.3_5.5mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 16,
+      "path": "Makera_0.3_5.5mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 17,
+      "path": "Makera_0.4_7mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 18,
+      "path": "Makera_0.4_7mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 19,
+      "path": "Makera_0.4_7mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 20,
+      "path": "Makera_0.4_7mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 21,
+      "path": "Makera_0.4_7mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 22,
+      "path": "Makera_0.4_7mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 23,
+      "path": "Makera_0.4_7mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 24,
+      "path": "Makera_0.4_7mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 25,
+      "path": "Makera_0.5_8.5mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 26,
+      "path": "Makera_0.5_8.5mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 27,
+      "path": "Makera_0.5_8.5mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 28,
+      "path": "Makera_0.5_8.5mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 29,
+      "path": "Makera_0.5_8.5mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 30,
+      "path": "Makera_0.5_8.5mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 31,
+      "path": "Makera_0.5_8.5mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 32,
+      "path": "Makera_0.5_8.5mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 33,
+      "path": "Makera_0.6_9.5mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 34,
+      "path": "Makera_0.6_9.5mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 35,
+      "path": "Makera_0.6_9.5mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 36,
+      "path": "Makera_0.6_9.5mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 37,
+      "path": "Makera_0.6_9.5mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 38,
+      "path": "Makera_0.6_9.5mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 39,
+      "path": "Makera_0.6_9.5mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 40,
+      "path": "Makera_0.6_9.5mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 41,
+      "path": "Makera_0.7_10mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 42,
+      "path": "Makera_0.7_10mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 43,
+      "path": "Makera_0.7_10mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 44,
+      "path": "Makera_0.7_10mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 45,
+      "path": "Makera_0.7_10mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 46,
+      "path": "Makera_0.7_10mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 47,
+      "path": "Makera_0.7_10mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 48,
+      "path": "Makera_0.7_10mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 49,
+      "path": "Makera_0.8_10mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 50,
+      "path": "Makera_0.8_10mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 51,
+      "path": "Makera_0.8_10mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 52,
+      "path": "Makera_0.8_10mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 53,
+      "path": "Makera_0.8_10mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 54,
+      "path": "Makera_0.8_10mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 55,
+      "path": "Makera_0.8_10mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 56,
+      "path": "Makera_0.8_10mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 57,
+      "path": "Makera_0.9_10mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 58,
+      "path": "Makera_0.9_10mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 59,
+      "path": "Makera_0.9_10mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 60,
+      "path": "Makera_0.9_10mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 61,
+      "path": "Makera_0.9_10mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 62,
+      "path": "Makera_0.9_10mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 63,
+      "path": "Makera_0.9_10mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 64,
+      "path": "Makera_0.9_10mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 65,
+      "path": "Makera_1.1_10mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 66,
+      "path": "Makera_1.1_10mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 67,
+      "path": "Makera_1.1_10mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 68,
+      "path": "Makera_1.1_10mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 69,
+      "path": "Makera_1.1_10mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 70,
+      "path": "Makera_1.1_10mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 71,
+      "path": "Makera_1.1_10mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 72,
+      "path": "Makera_1.1_10mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 73,
+      "path": "Makera_1.2_10mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 74,
+      "path": "Makera_1.2_10mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 75,
+      "path": "Makera_1.2_10mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 76,
+      "path": "Makera_1.2_10mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 77,
+      "path": "Makera_1.2_10mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 78,
+      "path": "Makera_1.2_10mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 79,
+      "path": "Makera_1.2_10mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 80,
+      "path": "Makera_1.2_10mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 81,
+      "path": "Makera_1.3_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 82,
+      "path": "Makera_1.3_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 83,
+      "path": "Makera_1.3_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 84,
+      "path": "Makera_1.3_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 85,
+      "path": "Makera_1.3_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 86,
+      "path": "Makera_1.3_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 87,
+      "path": "Makera_1.3_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 88,
+      "path": "Makera_1.3_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 89,
+      "path": "Makera_1.4_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 90,
+      "path": "Makera_1.4_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 91,
+      "path": "Makera_1.4_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 92,
+      "path": "Makera_1.4_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 93,
+      "path": "Makera_1.4_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 94,
+      "path": "Makera_1.4_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 95,
+      "path": "Makera_1.4_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 96,
+      "path": "Makera_1.4_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 97,
+      "path": "Makera_1.5_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 98,
+      "path": "Makera_1.5_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 99,
+      "path": "Makera_1.5_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 100,
+      "path": "Makera_1.5_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 101,
+      "path": "Makera_1.5_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 102,
+      "path": "Makera_1.5_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 103,
+      "path": "Makera_1.5_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 104,
+      "path": "Makera_1.5_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 105,
+      "path": "Makera_1.6_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 106,
+      "path": "Makera_1.6_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 107,
+      "path": "Makera_1.6_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 108,
+      "path": "Makera_1.6_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 109,
+      "path": "Makera_1.6_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 110,
+      "path": "Makera_1.6_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 111,
+      "path": "Makera_1.6_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 112,
+      "path": "Makera_1.6_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 113,
+      "path": "Makera_1.7_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 114,
+      "path": "Makera_1.7_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 115,
+      "path": "Makera_1.7_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 116,
+      "path": "Makera_1.7_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 117,
+      "path": "Makera_1.7_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 118,
+      "path": "Makera_1.7_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 119,
+      "path": "Makera_1.7_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 120,
+      "path": "Makera_1.7_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 121,
+      "path": "Makera_1.8_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 122,
+      "path": "Makera_1.8_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 123,
+      "path": "Makera_1.8_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 124,
+      "path": "Makera_1.8_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 125,
+      "path": "Makera_1.8_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 126,
+      "path": "Makera_1.8_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 127,
+      "path": "Makera_1.8_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 128,
+      "path": "Makera_1.8_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 129,
+      "path": "Makera_1.9_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 130,
+      "path": "Makera_1.9_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 131,
+      "path": "Makera_1.9_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 132,
+      "path": "Makera_1.9_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 133,
+      "path": "Makera_1.9_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 134,
+      "path": "Makera_1.9_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 135,
+      "path": "Makera_1.9_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 136,
+      "path": "Makera_1.9_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 137,
+      "path": "Makera_1_10mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 138,
+      "path": "Makera_1_10mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 139,
+      "path": "Makera_1_10mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 140,
+      "path": "Makera_1_10mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 141,
+      "path": "Makera_1_10mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 142,
+      "path": "Makera_1_10mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 143,
+      "path": "Makera_1_10mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 144,
+      "path": "Makera_1_10mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 145,
+      "path": "Makera_2.1_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 146,
+      "path": "Makera_2.1_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 147,
+      "path": "Makera_2.1_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 148,
+      "path": "Makera_2.1_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 149,
+      "path": "Makera_2.1_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 150,
+      "path": "Makera_2.1_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 151,
+      "path": "Makera_2.1_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 152,
+      "path": "Makera_2.1_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 153,
+      "path": "Makera_2.2_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 154,
+      "path": "Makera_2.2_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 155,
+      "path": "Makera_2.2_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 156,
+      "path": "Makera_2.2_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 157,
+      "path": "Makera_2.2_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 158,
+      "path": "Makera_2.2_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 159,
+      "path": "Makera_2.2_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 160,
+      "path": "Makera_2.2_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 161,
+      "path": "Makera_2.3_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 162,
+      "path": "Makera_2.3_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 163,
+      "path": "Makera_2.3_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 164,
+      "path": "Makera_2.3_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 165,
+      "path": "Makera_2.3_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 166,
+      "path": "Makera_2.3_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 167,
+      "path": "Makera_2.3_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 168,
+      "path": "Makera_2.3_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 169,
+      "path": "Makera_2.4_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 170,
+      "path": "Makera_2.4_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 171,
+      "path": "Makera_2.4_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 172,
+      "path": "Makera_2.4_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 173,
+      "path": "Makera_2.4_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 174,
+      "path": "Makera_2.4_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 175,
+      "path": "Makera_2.4_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 176,
+      "path": "Makera_2.4_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 177,
+      "path": "Makera_2.5_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 178,
+      "path": "Makera_2.5_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 179,
+      "path": "Makera_2.5_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 180,
+      "path": "Makera_2.5_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 181,
+      "path": "Makera_2.5_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 182,
+      "path": "Makera_2.5_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 183,
+      "path": "Makera_2.5_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 184,
+      "path": "Makera_2.5_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 185,
+      "path": "Makera_2.6_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 186,
+      "path": "Makera_2.6_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 187,
+      "path": "Makera_2.6_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 188,
+      "path": "Makera_2.6_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 189,
+      "path": "Makera_2.6_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 190,
+      "path": "Makera_2.6_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 191,
+      "path": "Makera_2.6_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 192,
+      "path": "Makera_2.6_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 193,
+      "path": "Makera_2.7_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 194,
+      "path": "Makera_2.7_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 195,
+      "path": "Makera_2.7_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 196,
+      "path": "Makera_2.7_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 197,
+      "path": "Makera_2.7_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 198,
+      "path": "Makera_2.7_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 199,
+      "path": "Makera_2.7_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 200,
+      "path": "Makera_2.7_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 201,
+      "path": "Makera_2.8_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 202,
+      "path": "Makera_2.8_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 203,
+      "path": "Makera_2.8_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 204,
+      "path": "Makera_2.8_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 205,
+      "path": "Makera_2.8_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 206,
+      "path": "Makera_2.8_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 207,
+      "path": "Makera_2.8_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 208,
+      "path": "Makera_2.8_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 209,
+      "path": "Makera_2.9_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 210,
+      "path": "Makera_2.9_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 211,
+      "path": "Makera_2.9_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 212,
+      "path": "Makera_2.9_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 213,
+      "path": "Makera_2.9_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 214,
+      "path": "Makera_2.9_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 215,
+      "path": "Makera_2.9_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 216,
+      "path": "Makera_2.9_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 217,
+      "path": "Makera_2_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 218,
+      "path": "Makera_2_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 219,
+      "path": "Makera_2_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 220,
+      "path": "Makera_2_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 221,
+      "path": "Makera_2_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 222,
+      "path": "Makera_2_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 223,
+      "path": "Makera_2_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 224,
+      "path": "Makera_2_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 225,
+      "path": "Makera_3.175_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 226,
+      "path": "Makera_3.175_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 227,
+      "path": "Makera_3.175_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 228,
+      "path": "Makera_3.175_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 229,
+      "path": "Makera_3.175_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 230,
+      "path": "Makera_3.175_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 231,
+      "path": "Makera_3.175_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 232,
+      "path": "Makera_3.175_12mm_Drill_Softwood.fctb"
+    },
+    {
+      "nr": 233,
+      "path": "Makera_3_12mm_Drill_Aluminum.fctb"
+    },
+    {
+      "nr": 234,
+      "path": "Makera_3_12mm_Drill_Brass.fctb"
+    },
+    {
+      "nr": 235,
+      "path": "Makera_3_12mm_Drill_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 236,
+      "path": "Makera_3_12mm_Drill_Copper.fctb"
+    },
+    {
+      "nr": 237,
+      "path": "Makera_3_12mm_Drill_Hardwood.fctb"
+    },
+    {
+      "nr": 238,
+      "path": "Makera_3_12mm_Drill_PCB.fctb"
+    },
+    {
+      "nr": 239,
+      "path": "Makera_3_12mm_Drill_Plastic.fctb"
+    },
+    {
+      "nr": 240,
+      "path": "Makera_3_12mm_Drill_Softwood.fctb"
+    }
+  ],
+  "version": 1
+}

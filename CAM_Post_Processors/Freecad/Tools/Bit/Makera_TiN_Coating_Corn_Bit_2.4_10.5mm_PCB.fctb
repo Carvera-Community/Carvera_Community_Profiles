@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "name": "Makera_TiN Coating Corn Bit 2.4*10.5mm_PCB",
+  "shape": "Endmill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "20.83 \u00b5m",
+    "CuttingEdgeHeight": "10.500 mm",
+    "CuttingEdgeLength": "10.500 mm",
+    "Diameter": "2.400 mm",
+    "Length": "38.000 mm",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "flat end mill",
+    "Description": "TiN Coating Corn Bit 2.4*10.5mm",
+    "Vendor": "Makera",
+    "cutting_feedrate": "500",
+    "lead_in_feedrate": "500",
+    "plunge_feedrate": "300",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "2",
+    "spindleSpeed": "12000",
+    "stepdown": "0.3"
+  }
+}

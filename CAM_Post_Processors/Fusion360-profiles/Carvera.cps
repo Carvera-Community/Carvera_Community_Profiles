@@ -10,7 +10,7 @@
   FORKID {D897E9AA-349A-4011-AA01-06B6CCC181EB}
 */
 
-description = "Makera Carvera Community Probing Post v1.4.3";
+description = "Makera Carvera Community Probing Post v1.4.6";
 
 vendor = "Makera";
 vendorUrl = "https://www.makera.com";
@@ -229,7 +229,7 @@ properties = {
     group: "1. Preferences",
     type: "enum",
     values: [
-      { title: "Stock Air", id: "carvAirMtc" },
+      { title: "Stock Air/Z1", id: "carvAirMtc" },
       { title: "Stock C1", id: "error6" },
       { title: "Stock C1 with Manual Tool Changes", id: "fusionMtc" },
       {
@@ -320,7 +320,7 @@ var coolants = [
   { id: COOLANT_MIST },
   { id: COOLANT_THROUGH_TOOL },
   { id: COOLANT_AIR, on: [400, 7] },
-  { id: COOLANT_AIR_THROUGH_TOOL },
+  { id: COOLANT_AIR_THROUGH_TOOL, on: "M811 S100", off: "M812" }, // spindle fan 100% for z1
   { id: COOLANT_SUCTION },
   { id: COOLANT_FLOOD_MIST },
   { id: COOLANT_FLOOD_THROUGH_TOOL },
@@ -332,15 +332,10 @@ var mFormat = createFormat({ prefix: "M", decimals: 0 });
 
 var xyzFormat = createFormat({
   decimals: unit == MM ? 3 : 4,
-  type: FORMAT_REAL,
-  minDigitsRight: 1
+  forceDecimal: true
 });
 var abcFormat = createFormat({ decimals: 3, forceDecimal: true, scale: DEG });
-var feedFormat = createFormat({
-  decimals: unit == MM ? 1 : 2,
-  type: FORMAT_REAL,
-  minDigitsRight: 1
-});
+var feedFormat = createFormat({ decimals: 0 });
 var inverseTimeFormat = createFormat({ decimals: 3, forceDecimal: true });
 var toolFormat = createFormat({ decimals: 0 });
 var rpmFormat = createFormat({ decimals: 0 });
@@ -459,6 +454,14 @@ function getToolShaftDiameterMm(tool) {
 }
 
 /**
+  Shaft diameter in current document units.
+*/
+function getShaftDiameter(tool) {
+  var diaMm = getToolShaftDiameterMm(tool);
+  return unit == MM ? diaMm : diaMm / 25.4;
+}
+
+/**
   Returns S1-S5 parameter for tool change when shank diameter changed.
   DO NOT CHANGE THIS NUMBERING: S1=3.175mm, S2=4mm, S3=6mm, S4=6.35mm, S5=8mm.
   diameterMm in mm. Returns "" if no match.
@@ -517,34 +520,34 @@ function onParameter(name, value) {
     } else if (String(value).toUpperCase() == "RESETFEEDOVERRIDE") {
       writeBlock("M220 S100 (Reset Feed Speed override)");
     } else if (String(value).toUpperCase() == "AIRON") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M7 (Compressed Air On)");
     } else if (String(value).toUpperCase() == "AIROFF") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M9 (Compressed Air Off)");
     } else if (String(value).toUpperCase() == "VACON") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M801 S100 (Vacuum On)");
     } else if (String(value).toUpperCase() == "VACOFF") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M802 (Vacuum Off)");
     } else if (String(value).toUpperCase() == "AUTOVACON") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M331 (Turn On Auto Vacuum)");
     } else if (String(value).toUpperCase() == "AUTOVACOFF") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M332 (Turn Off Auto Vacuum)");
     } else if (String(value).toUpperCase() == "LIGHTON") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M821 (Turn On Light)");
     } else if (String(value).toUpperCase() == "LIGHTOFF") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M822 (Turn Off Light)");
     } else if (String(value).toUpperCase() == "EXTON") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M851 S100 (External Control On 100)");
     } else if (String(value).toUpperCase() == "EXTOFF") {
-      writeBlock("M400");
+      writeBlock(mFormat.format(400));
       writeBlock("M852 (External Control Off)");
     } else if (String(value).toUpperCase() == "SHRINKA") {
       writeBlock("G92.4 A0 S0 (shrink the a axis so A365 becomes A5)");
@@ -722,8 +725,31 @@ function getBodyLength(tool) {
   return tool.bodyLength + tool.holderLength;
 }
 
+/**
+  Append " KEY=value" when value is a finite number.
+  By default requires value > 0; pass allowZero=true to also accept 0 (e.g. tip diameter).
+*/
+function appendToolField(comment, key, value, format, allowZero) {
+  if (typeof value != "number" || isNaN(value)) {
+    return comment;
+  }
+  if (allowZero ? value < 0 : value <= 0) {
+    return comment;
+  }
+  return comment + " " + key + "=" + format.format(value);
+}
+
+/**
+  Dump one comment line per tool for the header tool list.
+
+  Layout:
+  T<n>  <description>  <vendor>  <productId>  D=<diameter>
+    [CR=<corner radius>] [SD=<shaft>] [TD=<tip>] [FL=<flute>] [SL=<shoulder>]
+    [BL=<body>] [TP=<pitch>] [TAPER=<angle>deg] [- ZMIN=<z>] - <toolTypeName>
+
+  See https://cam.autodesk.com/posts/reference/classTool.html
+*/
 function dumpToolInformation() {
-  // dump tool information
   writeln(""); // empty line
   writeComment("Tool Information:");
   var zRanges = {};
@@ -732,11 +758,11 @@ function dumpToolInformation() {
     for (var i = 0; i < numberOfSections; ++i) {
       var section = getSection(i);
       var zRange = section.getGlobalZRange();
-      var tool = section.getTool();
-      if (zRanges[tool.number]) {
-        zRanges[tool.number].expandToRange(zRange);
+      var sectionTool = section.getTool();
+      if (zRanges[sectionTool.number]) {
+        zRanges[sectionTool.number].expandToRange(zRange);
       } else {
-        zRanges[tool.number] = zRange;
+        zRanges[sectionTool.number] = zRange;
       }
     }
   }
@@ -756,26 +782,37 @@ function dumpToolInformation() {
         tool.productId +
         "  " +
         "D=" +
-        xyzFormat.format(tool.diameter) +
-        " " +
-        localize("CR") +
-        "=" +
-        xyzFormat.format(tool.cornerRadius);
+        xyzFormat.format(tool.diameter);
+
+      // Extra geometry
+      comment = appendToolField(comment, "CR", tool.cornerRadius, xyzFormat);
+      comment = appendToolField(
+        comment,
+        "SD",
+        getShaftDiameter(tool),
+        xyzFormat
+      );
+      comment = appendToolField(
+        comment,
+        "TD",
+        tool.tipDiameter,
+        xyzFormat,
+        true
+      );
+      comment = appendToolField(comment, "FL", tool.fluteLength, xyzFormat);
+      comment = appendToolField(comment, "SL", tool.shoulderLength, xyzFormat);
+      comment = appendToolField(comment, "BL", tool.bodyLength, xyzFormat);
+      comment = appendToolField(comment, "TP", tool.threadPitch, xyzFormat);
+
       if (tool.taperAngle > 0 && tool.taperAngle < Math.PI) {
-        comment +=
-          " " +
-          localize("TAPER") +
-          "=" +
-          taperFormat.format(tool.taperAngle) +
-          localize("deg");
+        comment += " TAPER=" + taperFormat.format(tool.taperAngle) + "deg";
       }
+
       if (zRanges[tool.number]) {
         comment +=
-          " - " +
-          localize("ZMIN") +
-          "=" +
-          xyzFormat.format(zRanges[tool.number].getMinimum());
+          " - ZMIN=" + xyzFormat.format(zRanges[tool.number].getMinimum());
       }
+
       comment += " - " + getToolTypeName(tool.type);
       writeComment(comment);
     }
@@ -1256,6 +1293,12 @@ function positionABC(abc, force) {
     }
     onCommand(COMMAND_UNLOCK_MULTI_AXIS);
     gMotionModal.reset();
+    var a_axis_offset = parseFloat(a.substring(1));
+    if (!isNaN(a_axis_offset)) {
+      writeBlock(
+        "G92.4 A" + a_axis_offset + " R0 (shrink the a axis so A365 becomes A5)"
+      );
+    }
     writeBlock(gMotionModal.format(0), a, b, c);
     setCurrentABC(abc); // required for machine simulation
   }
@@ -1512,9 +1555,12 @@ function onSection() {
         toolChangeParameters = toolChangeParameters + " " + shaftParam;
       }
 
-      writeToolBlock(
-        mFormat.format(6),
-        "T" + toolFormat.format(tool.number) + " " + toolChangeParameters
+      writeBlock(
+        "T" +
+          toolFormat.format(tool.number) +
+          mFormat.format(6) +
+          " " +
+          toolChangeParameters
       );
 
       if (tool.comment && !getProperty("useToolCommentForChangeParameters")) {
@@ -1523,26 +1569,30 @@ function onSection() {
     } else if (e_manualToolChangeBehavior == "carvcomMtc") {
       if (tloValue && !getProperty("useToolCommentForChangeParameters")) {
         if (tloValue === "A") {
-          writeToolBlock(
-            mFormat.format(6),
-            "T" + toolFormat.format(tool.number) + " C1"
+          writeBlock(
+            "T" + toolFormat.format(tool.number) + mFormat.format(6) + " C1"
           );
         } else if (tloValue === "M") {
-          writeToolBlock(
-            mFormat.format(6),
-            "T" + toolFormat.format(tool.number) + " C0"
+          writeBlock(
+            "T" + toolFormat.format(tool.number) + mFormat.format(6) + " C0"
           );
         } else {
           var tloFloat = parseFloat(tloValue);
           if (!isNaN(tloFloat)) {
+            writeBlock(
+              "T" +
+                toolFormat.format(tool.number) +
+                mFormat.format(6) +
+                " H" +
+                tloFloat
+            );
             writeToolBlock(
               mFormat.format(6),
               "T" + toolFormat.format(tool.number) + " H" + tloFloat
             );
           } else {
-            writeToolBlock(
-              mFormat.format(6),
-              "T" + toolFormat.format(tool.number)
+            writeBlock(
+              "T" + toolFormat.format(tool.number) + mFormat.format(6)
             );
           }
         }
@@ -1554,10 +1604,12 @@ function onSection() {
         if (getProperty("issueColletChangeOnShankSizeChange")) {
           toolChangeParameters = toolChangeParameters + " " + shaftParam;
         }
-
-        writeToolBlock(
-          mFormat.format(6),
-          "T" + toolFormat.format(tool.number) + " " + toolChangeParameters
+        writeBlock(
+          "T" +
+            toolFormat.format(tool.number) +
+            mFormat.format(6) +
+            " " +
+            toolChangeParameters
         );
       }
     } else if (tool.number > 6 || tool.manualToolChange) {
@@ -1591,7 +1643,7 @@ function onSection() {
         writeBlock(mFormat.format(600));
         writeBlock("M493.2 T-1");
       }
-      writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number));
+      writeBlock("T" + toolFormat.format(tool.number) + mFormat.format(6));
 
       if (tool.comment) {
         writeComment(tool.comment);
@@ -3002,6 +3054,7 @@ function onCommand(command) {
       forceCoolant = true;
       if (getProperty("defaultUseExternalControl")) {
         writeBlock(mFormat.format(400));
+
         writeBlock(mFormat.format(852));
       }
       return;

@@ -1,0 +1,101 @@
+; Carvera PostP file arc moves in MM with ATC
+;
+; === ======== ========================================
+;GW 3/14/08 created for Arc(MM) with toolchange 
+;GW 4/6/09 Revised formatting and sequence
+;GW 4/6/09 Added tool description & tool length offset to tool change
+;GW 10/25/09 Added toolnumber and tool description for Start & New Segment
+;GW 10/25/09 Added New Segment to allow forced RPM change on same tool #
+;GW 10/10/10 Added Material size to output
+;GW 08/14/14 Verified with Mach4 & renamed post
+;GW 08/14/14 Adjusted Header & Forced use of incremental arcs
+;
+; 
+DESCRIPTION = "Carvera-4axis(*.NC)"
+;
+FILE_EXTENSION = "NC"
+;
+UNITS = MM
+;
+; --------------------- Rotary axis control -------------------------
+;
+; Specify which linear axis is wrapped onto the rotary axis
+;
+ROTARY_AXIS = Y
+;
+; if ROTARY_ORIGIN_IS_CENTRE is set to YES, the tool Z Zero position
+; should ALWAYS be set to the centre of the rotary axis no matter
+; what the diameter of the object being rotary machined. ArtCAM will
+; compensate for the correct machining diameter specified when the
+; toolpath was calculated as a rotary toolpath. If the toolpath was not
+; calculated as a rotary toolpath, it will be wrapped around a cylinder
+; with the circumference of the X length of the relief
+;
+ROTARY_ORIGIN_IS_CENTRE = YES
+;
+
+; Cariage return - line feed at end of each line
+;
+END_OF_LINE = "[13][10]"
+;
+; Spindle Speed
+FORMAT = [S|@|S|1.0]
+; Feed Rate
+FORMAT = [F|#|F|1.0]
+; Tool moves in x,y and z
+FORMAT = [X|#|X|1.3]
+FORMAT = [Y|#|Y|1.3]
+FORMAT = [Z|#|Z|1.3]
+FORMAT = [R|#| A |1.3|-1.0]
+
+; Home tool positions 
+FORMAT = [XH|@|X|1.3]
+FORMAT = [YH|@|Y|1.3]
+FORMAT = [ZH|@|Z|1.3]
+FORMAT = [RH|@| A |1.3|-1.0]
+;
+; Tool Number
+FORMAT = [T|@||1.0]
+;
+; Set up program header
+;
+START = "([FILENAME])"
+START = "(Material Size) (X=[XSIZE], Z=[ZMATERIAL])"
+START = "G017 G21 G90 "
+START = "G00 G53 Z-3"
+START = "T[T] M6 "
+;START = "(Tool Number:[T]) ([TOOLDESC])"
+START = "(Tool Number:[T])"
+START = "[S] M3 "
+START = "G00 Y0"
+;
+; Program moves
+;
+FIRST_RAPID_RATE_MOVE  = "G0 [X] [Z] [R]"
+RAPID_RATE_MOVE ="[X] [Z] [R]"
+;
+FIRST_FEED_RATE_MOVE   = "G1 [X] [Z] [R] [F]"
+FEED_RATE_MOVE         = "[X] [Z] [R]"
+;
+
+
+NEW_SEGMENT_POST_TOOLCHANGE="(Tool Number:[T]) "	
+NEW_SEGMENT_POST_TOOLCHANGE= "[S] M3"
+NEW_SEGMENT_POST_TOOLCHANGE= "G00 Y0"
+;
+;Setup Toolchange Commands
+;
+TOOLCHANGE = "G0[ZH]"
+TOOLCHANGE = "M5"
+;TOOLCHANGE = "G49"
+TOOLCHANGE = "T[T] M6 "
+;TOOLCHANGE = "G43 H[T] G0[ZH]"
+;
+; End of file
+;
+;END = "G0[ZH]"
+;END = "G0[XH][YH]"
+END = "M5"
+END = "G28"
+END = "M30"
+; M30 = program end and rewind

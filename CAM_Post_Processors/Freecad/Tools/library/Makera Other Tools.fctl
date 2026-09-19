@@ -1,0 +1,42 @@
+{
+  "label": "Makera Other Tools",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Aluminum.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Brass.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Carbon_Fiber.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Copper.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Hardwood.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_PCB.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Plastic.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_Chamfering_Bit_-_1_8_Shank_Softwood.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_UV_Solder_Mask_Removal_Tool_PCB.fctb"
+    }
+  ],
+  "version": 1
+}

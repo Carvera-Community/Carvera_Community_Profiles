@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "name": "Makera_Carvera M1 Threadmill_Copper",
+  "shape": "thread-mill.fcstd",
+  "shape-type": "ThreadMill",
+  "parameter": {
+    "Chipload": "1.11 \u00b5m",
+    "CuttingEdgeHeight": "2.000 mm",
+    "CuttingEdgeLength": "2.000 mm",
+    "Diameter": "0.730 mm",
+    "Length": "38.000 mm",
+    "Pitch": "0.250 mm",
+    "cuttingAngle": "60",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "3"
+  },
+  "attribute": {
+    "ToolType": "thread mill",
+    "Description": "Carvera M1 Threadmill",
+    "Vendor": "Makera",
+    "cutting_feedrate": "50",
+    "lead_in_feedrate": "50",
+    "plunge_feedrate": "50",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "2",
+    "spindleSpeed": "15000",
+    "stepdown": "0.25",
+    "stepover": "0.146"
+  }
+}

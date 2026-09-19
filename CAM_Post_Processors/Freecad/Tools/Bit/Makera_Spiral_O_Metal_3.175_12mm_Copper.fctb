@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "name": "Makera_Spiral O Metal 3.175*12mm_Copper",
+  "shape": "Endmill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "25.00 \u00b5m",
+    "CuttingEdgeHeight": "12.000 mm",
+    "CuttingEdgeLength": "12.000 mm",
+    "Diameter": "3.175 mm",
+    "Length": "38.000 mm",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "1"
+  },
+  "attribute": {
+    "ToolType": "flat end mill",
+    "Description": "Spiral O Metal 3.175*12mm",
+    "Vendor": "Makera",
+    "cutting_feedrate": "300.001",
+    "lead_in_feedrate": "300",
+    "plunge_feedrate": "100",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.2",
+    "spindleSpeed": "12000",
+    "stepdown": "0.1"
+  }
+}

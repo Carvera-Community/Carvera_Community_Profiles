@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "name": "Makera_Two Flute Engraving Bit - 6mm 20 deg .4 tip_Hardwood",
+  "shape": "v-bit.fcstd",
+  "shape-type": "VBit",
+  "parameter": {
+    "Chipload": "41.67 \u00b5m",
+    "CuttingEdgeHeight": "17.000 mm",
+    "CuttingEdgeLength": "17.000 mm",
+    "Diameter": "6.000 mm",
+    "Length": "50.000 mm",
+    "CuttingEdgeAngle": 20.0,
+    "TipDiameter": "0.400 mm",
+    "ShankDiameter": "6",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "chamfer mill",
+    "Description": "Two Flute Engraving Bit - 6mm 20 deg .4 tip",
+    "Vendor": "Makera",
+    "cutting_feedrate": "1000",
+    "lead_in_feedrate": "1000",
+    "plunge_feedrate": "500",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.2",
+    "spindleSpeed": "12000",
+    "stepdown": "1",
+    "stepover": "0.03"
+  }
+}

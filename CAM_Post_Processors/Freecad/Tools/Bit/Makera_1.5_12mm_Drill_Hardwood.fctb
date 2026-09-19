@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "Makera_1.5*12mm Drill_Hardwood",
+  "shape": "drill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "30.00 \u00b5m",
+    "CuttingEdgeHeight": "12.000 mm",
+    "CuttingEdgeLength": "12.000 mm",
+    "Diameter": "1.500 mm",
+    "Length": "38.000 mm",
+    "CuttingEdgeAngle": 236.0,
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "drill",
+    "Description": "1.5*12mm Drill",
+    "Vendor": "Makera",
+    "plunge_feedrate": "300",
+    "rampAngle": "2",
+    "spindleSpeed": "10000"
+  }
+}

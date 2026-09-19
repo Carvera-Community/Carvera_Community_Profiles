@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "name": "Makera_Carvera M8 Threadmill_Plastic",
+  "shape": "thread-mill.fcstd",
+  "shape-type": "ThreadMill",
+  "parameter": {
+    "Chipload": "13.33 \u00b5m",
+    "CuttingEdgeHeight": "2.000 mm",
+    "CuttingEdgeLength": "2.000 mm",
+    "Diameter": "6.000 mm",
+    "Length": "50.000 mm",
+    "Pitch": "1.000 mm",
+    "cuttingAngle": "60",
+    "ShankDiameter": "6",
+    "Material": "Carbide",
+    "Flutes": "3"
+  },
+  "attribute": {
+    "ToolType": "thread mill",
+    "Description": "Carvera M8 Threadmill",
+    "Vendor": "Makera",
+    "cutting_feedrate": "400",
+    "lead_in_feedrate": "400",
+    "plunge_feedrate": "400",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "2",
+    "spindleSpeed": "10000",
+    "stepdown": "0.8",
+    "stepover": "1.8"
+  }
+}

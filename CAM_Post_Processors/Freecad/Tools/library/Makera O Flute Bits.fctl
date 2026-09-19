@@ -1,0 +1,438 @@
+{
+  "label": "Makera O Flute Bits",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_Spiral_O_Metal_6_17mm_DLC_Aluminum.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_Spiral_O_Metal_6_17mm_DLC_Brass.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_Spiral_O_Metal_6_17mm_DLC_Copper.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_Spiral_O_Metal_6_17mm_DLC_Hardwood.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_Spiral_O_Metal_6_17mm_DLC_Plastic.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_Spiral_O_Metal_6_17mm_DLC_Softwood.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_Spiral_O_Metal_6_25mm_DLC_Aluminum.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_Spiral_O_Metal_6_25mm_DLC_Brass.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_Spiral_O_Metal_6_25mm_DLC_Copper.fctb"
+    },
+    {
+      "nr": 10,
+      "path": "Makera_Spiral_O_Metal_6_25mm_DLC_Hardwood.fctb"
+    },
+    {
+      "nr": 11,
+      "path": "Makera_Spiral_O_Metal_6_25mm_DLC_Plastic.fctb"
+    },
+    {
+      "nr": 12,
+      "path": "Makera_Spiral_O_Metal_6_25mm_DLC_Softwood.fctb"
+    },
+    {
+      "nr": 13,
+      "path": "Makera_Spiral_O_Metal_6_30mm_DLC_Aluminum.fctb"
+    },
+    {
+      "nr": 14,
+      "path": "Makera_Spiral_O_Metal_6_30mm_DLC_Brass.fctb"
+    },
+    {
+      "nr": 15,
+      "path": "Makera_Spiral_O_Metal_6_30mm_DLC_Copper.fctb"
+    },
+    {
+      "nr": 16,
+      "path": "Makera_Spiral_O_Metal_6_30mm_DLC_Hardwood.fctb"
+    },
+    {
+      "nr": 17,
+      "path": "Makera_Spiral_O_Metal_6_30mm_DLC_Plastic.fctb"
+    },
+    {
+      "nr": 18,
+      "path": "Makera_Spiral_O_Metal_6_30mm_DLC_Softwood.fctb"
+    },
+    {
+      "nr": 19,
+      "path": "Makera_Spiral_O_6_22mm_Bright_Hardwood.fctb"
+    },
+    {
+      "nr": 20,
+      "path": "Makera_Spiral_O_6_22mm_Bright_Plastic.fctb"
+    },
+    {
+      "nr": 21,
+      "path": "Makera_Spiral_O_6_22mm_Bright_Softwood.fctb"
+    },
+    {
+      "nr": 22,
+      "path": "Makera_Spiral_O_6_25mm_Bright_Hardwood.fctb"
+    },
+    {
+      "nr": 23,
+      "path": "Makera_Spiral_O_6_25mm_Bright_Plastic.fctb"
+    },
+    {
+      "nr": 24,
+      "path": "Makera_Spiral_O_6_25mm_Bright_Softwood.fctb"
+    },
+    {
+      "nr": 25,
+      "path": "Makera_Spiral_O_6_32mm_Bright_Hardwood.fctb"
+    },
+    {
+      "nr": 26,
+      "path": "Makera_Spiral_O_6_32mm_Bright_Plastic.fctb"
+    },
+    {
+      "nr": 27,
+      "path": "Makera_Spiral_O_6_32mm_Bright_Softwood.fctb"
+    },
+    {
+      "nr": 28,
+      "path": "Makera_Spiral_O_Metal_4_12mm_Aluminum.fctb"
+    },
+    {
+      "nr": 29,
+      "path": "Makera_Spiral_O_Metal_4_12mm_Brass.fctb"
+    },
+    {
+      "nr": 30,
+      "path": "Makera_Spiral_O_Metal_4_12mm_Copper.fctb"
+    },
+    {
+      "nr": 31,
+      "path": "Makera_Spiral_O_Metal_4_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 32,
+      "path": "Makera_Spiral_O_Metal_4_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 33,
+      "path": "Makera_Spiral_O_Metal_4_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 34,
+      "path": "Makera_Spiral_O_Metal_4_17m_Aluminum.fctb"
+    },
+    {
+      "nr": 35,
+      "path": "Makera_Spiral_O_Metal_4_17m_Brass.fctb"
+    },
+    {
+      "nr": 36,
+      "path": "Makera_Spiral_O_Metal_4_17m_Copper.fctb"
+    },
+    {
+      "nr": 37,
+      "path": "Makera_Spiral_O_Metal_4_17m_Hardwood.fctb"
+    },
+    {
+      "nr": 38,
+      "path": "Makera_Spiral_O_Metal_4_17m_Plastic.fctb"
+    },
+    {
+      "nr": 39,
+      "path": "Makera_Spiral_O_Metal_4_17m_Softwood.fctb"
+    },
+    {
+      "nr": 40,
+      "path": "Makera_Spiral_O_Metal_4_22m_Aluminum.fctb"
+    },
+    {
+      "nr": 41,
+      "path": "Makera_Spiral_O_Metal_4_22m_Brass.fctb"
+    },
+    {
+      "nr": 42,
+      "path": "Makera_Spiral_O_Metal_4_22m_Copper.fctb"
+    },
+    {
+      "nr": 43,
+      "path": "Makera_Spiral_O_Metal_4_22m_Hardwood.fctb"
+    },
+    {
+      "nr": 44,
+      "path": "Makera_Spiral_O_Metal_4_22m_Plastic.fctb"
+    },
+    {
+      "nr": 45,
+      "path": "Makera_Spiral_O_Metal_4_22m_Softwood.fctb"
+    },
+    {
+      "nr": 46,
+      "path": "Makera_Spiral_O_4_22m_Hardwood.fctb"
+    },
+    {
+      "nr": 47,
+      "path": "Makera_Spiral_O_4_22m_Plastic.fctb"
+    },
+    {
+      "nr": 48,
+      "path": "Makera_Spiral_O_4_22m_Softwood.fctb"
+    },
+    {
+      "nr": 49,
+      "path": "Makera_Spiral_O_4_25m_Hardwood.fctb"
+    },
+    {
+      "nr": 50,
+      "path": "Makera_Spiral_O_4_25m_Plastic.fctb"
+    },
+    {
+      "nr": 51,
+      "path": "Makera_Spiral_O_4_25m_Softwood.fctb"
+    },
+    {
+      "nr": 52,
+      "path": "Makera_Spiral_O_4_32mm_Hardwood.fctb"
+    },
+    {
+      "nr": 53,
+      "path": "Makera_Spiral_O_4_32mm_Plastic.fctb"
+    },
+    {
+      "nr": 54,
+      "path": "Makera_Spiral_O_4_32mm_Softwood.fctb"
+    },
+    {
+      "nr": 55,
+      "path": "Makera_Spiral_O_Metal_3.175_12mm_Aluminum.fctb"
+    },
+    {
+      "nr": 56,
+      "path": "Makera_Spiral_O_Metal_3.175_12mm_Brass.fctb"
+    },
+    {
+      "nr": 57,
+      "path": "Makera_Spiral_O_Metal_3.175_12mm_Copper.fctb"
+    },
+    {
+      "nr": 58,
+      "path": "Makera_Spiral_O_Metal_3.175_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 59,
+      "path": "Makera_Spiral_O_Metal_3.175_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 60,
+      "path": "Makera_Spiral_O_Metal_3.175_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 61,
+      "path": "Makera_Spiral_O_3.175_17mm_Hardwood.fctb"
+    },
+    {
+      "nr": 62,
+      "path": "Makera_Spiral_O_3.175_17mm_Plastic.fctb"
+    },
+    {
+      "nr": 63,
+      "path": "Makera_Spiral_O_3.175_17mm_Softwood.fctb"
+    },
+    {
+      "nr": 64,
+      "path": "Makera_Spiral_O_3.175_25mm_Hardwood.fctb"
+    },
+    {
+      "nr": 65,
+      "path": "Makera_Spiral_O_3.175_25mm_Plastic.fctb"
+    },
+    {
+      "nr": 66,
+      "path": "Makera_Spiral_O_3.175_25mm_Softwood.fctb"
+    },
+    {
+      "nr": 67,
+      "path": "Makera_Spiral_O_3.175_32mm_Hardwood.fctb"
+    },
+    {
+      "nr": 68,
+      "path": "Makera_Spiral_O_3.175_32mm_Plastic.fctb"
+    },
+    {
+      "nr": 69,
+      "path": "Makera_Spiral_O_3.175_32mm_Softwood.fctb"
+    },
+    {
+      "nr": 70,
+      "path": "Makera_Spiral_O_3.175_42mm_Hardwood.fctb"
+    },
+    {
+      "nr": 71,
+      "path": "Makera_Spiral_O_3.175_42mm_Plastic.fctb"
+    },
+    {
+      "nr": 72,
+      "path": "Makera_Spiral_O_3.175_42mm_Softwood.fctb"
+    },
+    {
+      "nr": 73,
+      "path": "Makera_Spiral_O_Metal_2.5_12mm_Aluminum.fctb"
+    },
+    {
+      "nr": 74,
+      "path": "Makera_Spiral_O_Metal_2.5_12mm_Brass.fctb"
+    },
+    {
+      "nr": 75,
+      "path": "Makera_Spiral_O_Metal_2.5_12mm_Copper.fctb"
+    },
+    {
+      "nr": 76,
+      "path": "Makera_Spiral_O_Metal_2.5_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 77,
+      "path": "Makera_Spiral_O_Metal_2.5_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 78,
+      "path": "Makera_Spiral_O_Metal_2.5_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 79,
+      "path": "Makera_Spiral_O_2.5_15mm_Hardwood.fctb"
+    },
+    {
+      "nr": 80,
+      "path": "Makera_Spiral_O_2.5_15mm_Plastic.fctb"
+    },
+    {
+      "nr": 81,
+      "path": "Makera_Spiral_O_2.5_15mm_Softwood.fctb"
+    },
+    {
+      "nr": 82,
+      "path": "Makera_Spiral_O_Metal_2_8mm_Aluminum.fctb"
+    },
+    {
+      "nr": 83,
+      "path": "Makera_Spiral_O_Metal_2_8mm_Brass.fctb"
+    },
+    {
+      "nr": 84,
+      "path": "Makera_Spiral_O_Metal_2_8mm_Copper.fctb"
+    },
+    {
+      "nr": 85,
+      "path": "Makera_Spiral_O_Metal_2_8mm_Hardwood.fctb"
+    },
+    {
+      "nr": 86,
+      "path": "Makera_Spiral_O_Metal_2_8mm_Plastic.fctb"
+    },
+    {
+      "nr": 87,
+      "path": "Makera_Spiral_O_Metal_2_8mm_Softwood.fctb"
+    },
+    {
+      "nr": 88,
+      "path": "Makera_Spiral_O_2_12mm_Hardwood.fctb"
+    },
+    {
+      "nr": 89,
+      "path": "Makera_Spiral_O_2_12mm_Plastic.fctb"
+    },
+    {
+      "nr": 90,
+      "path": "Makera_Spiral_O_2_12mm_Softwood.fctb"
+    },
+    {
+      "nr": 91,
+      "path": "Makera_Spiral_O_Metal_1.5_6mm_Aluminum.fctb"
+    },
+    {
+      "nr": 92,
+      "path": "Makera_Spiral_O_Metal_1.5_6mm_Brass.fctb"
+    },
+    {
+      "nr": 93,
+      "path": "Makera_Spiral_O_Metal_1.5_6mm_Copper.fctb"
+    },
+    {
+      "nr": 94,
+      "path": "Makera_Spiral_O_Metal_1.5_6mm_Hardwood.fctb"
+    },
+    {
+      "nr": 95,
+      "path": "Makera_Spiral_O_Metal_1.5_6mm_Plastic.fctb"
+    },
+    {
+      "nr": 96,
+      "path": "Makera_Spiral_O_Metal_1.5_6mm_Softwood.fctb"
+    },
+    {
+      "nr": 97,
+      "path": "Makera_Spiral_O_1.5_8mm_Hardwood.fctb"
+    },
+    {
+      "nr": 98,
+      "path": "Makera_Spiral_O_1.5_8mm_Plastic.fctb"
+    },
+    {
+      "nr": 99,
+      "path": "Makera_Spiral_O_1.5_8mm_Softwood.fctb"
+    },
+    {
+      "nr": 100,
+      "path": "Makera_Spiral_O_Metal_1_3mm_Aluminum.fctb"
+    },
+    {
+      "nr": 101,
+      "path": "Makera_Spiral_O_Metal_1_3mm_Brass.fctb"
+    },
+    {
+      "nr": 102,
+      "path": "Makera_Spiral_O_Metal_1_3mm_Copper.fctb"
+    },
+    {
+      "nr": 103,
+      "path": "Makera_Spiral_O_Metal_1_3mm_Hardwood.fctb"
+    },
+    {
+      "nr": 104,
+      "path": "Makera_Spiral_O_Metal_1_3mm_Plastic.fctb"
+    },
+    {
+      "nr": 105,
+      "path": "Makera_Spiral_O_Metal_1_3mm_Softwood.fctb"
+    },
+    {
+      "nr": 106,
+      "path": "Makera_Spiral_O_1_3mm_Hardwood.fctb"
+    },
+    {
+      "nr": 107,
+      "path": "Makera_Spiral_O_1_3mm_Plastic.fctb"
+    },
+    {
+      "nr": 108,
+      "path": "Makera_Spiral_O_1_3mm_Softwood.fctb"
+    }
+  ],
+  "version": 1
+}

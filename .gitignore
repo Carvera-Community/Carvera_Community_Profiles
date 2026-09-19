@@ -1,1 +1,10 @@
-CAM_Post_Processors/.DS_Store
+# OS metadata
+.DS_Store
+**/.DS_Store
+Thumbs.db
+Desktop.ini
+
+# macOS archive/resource-fork artifacts
+__MACOSX/
+**/__MACOSX/
+._*

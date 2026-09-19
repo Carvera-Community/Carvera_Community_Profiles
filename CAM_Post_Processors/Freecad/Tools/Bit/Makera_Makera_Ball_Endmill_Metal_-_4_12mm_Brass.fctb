@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "Makera_Makera Ball Endmill Metal  - 4*12mm_Brass",
+  "shape": "Ballend.fcstd",
+  "shape-type": "Ballend",
+  "parameter": {
+    "Chipload": "20.83 \u00b5m",
+    "CuttingEdgeHeight": "12.000 mm",
+    "CuttingEdgeLength": "12.000 mm",
+    "Diameter": "4.000 mm",
+    "Length": "50.000 mm",
+    "ShankDiameter": "4",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "ball end mill",
+    "Description": "Makera Ball Endmill Metal  - 4*12mm",
+    "Vendor": "Makera",
+    "cutting_feedrate": "500",
+    "lead_in_feedrate": "500",
+    "plunge_feedrate": "300",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.8",
+    "spindleSpeed": "12000",
+    "stepdown": "0.1",
+    "stepover": "0.571429"
+  }
+}

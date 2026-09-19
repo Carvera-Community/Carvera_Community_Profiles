@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "Makera_0.4*7mm Drill_Aluminum",
+  "shape": "drill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "10.00 \u00b5m",
+    "CuttingEdgeHeight": "7.000 mm",
+    "CuttingEdgeLength": "7.000 mm",
+    "Diameter": "0.400 mm",
+    "Length": "38.000 mm",
+    "CuttingEdgeAngle": 236.0,
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "drill",
+    "Description": "0.4*7mm Drill",
+    "Vendor": "Makera",
+    "plunge_feedrate": "100",
+    "rampAngle": "2",
+    "spindleSpeed": "10000"
+  }
+}

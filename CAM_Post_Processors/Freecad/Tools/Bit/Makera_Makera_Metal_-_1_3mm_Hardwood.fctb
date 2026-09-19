@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "Makera_Makera Metal - 1*3mm_Hardwood",
+  "shape": "Ballend.fcstd",
+  "shape-type": "Ballend",
+  "parameter": {
+    "Chipload": "20.83 \u00b5m",
+    "CuttingEdgeHeight": "3.000 mm",
+    "CuttingEdgeLength": "3.000 mm",
+    "Diameter": "1.000 mm",
+    "Length": "38.000 mm",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "ball end mill",
+    "Description": "Makera Metal - 1*3mm",
+    "Vendor": "Makera",
+    "cutting_feedrate": "500",
+    "lead_in_feedrate": "500",
+    "plunge_feedrate": "200",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.6",
+    "spindleSpeed": "12000",
+    "stepdown": "1",
+    "stepover": "0.142857"
+  }
+}

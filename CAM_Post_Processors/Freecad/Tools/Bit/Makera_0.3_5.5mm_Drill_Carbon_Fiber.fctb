@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "Makera_0.3*5.5mm Drill_Carbon Fiber",
+  "shape": "drill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "20.00 \u00b5m",
+    "CuttingEdgeHeight": "5.500 mm",
+    "CuttingEdgeLength": "5.500 mm",
+    "Diameter": "0.300 mm",
+    "Length": "38.000 mm",
+    "CuttingEdgeAngle": 236.0,
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "2"
+  },
+  "attribute": {
+    "ToolType": "drill",
+    "Description": "0.3*5.5mm Drill",
+    "Vendor": "Makera",
+    "plunge_feedrate": "200",
+    "rampAngle": "2",
+    "spindleSpeed": "10000"
+  }
+}

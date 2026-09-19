@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "name": "Makera_Spiral O 6*25mm Bright_Hardwood",
+  "shape": "Endmill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "0.100 mm",
+    "CuttingEdgeHeight": "25.000 mm",
+    "CuttingEdgeLength": "25.000 mm",
+    "Diameter": "6.000 mm",
+    "Length": "55.000 mm",
+    "ShankDiameter": "6",
+    "Material": "Carbide",
+    "Flutes": "1"
+  },
+  "attribute": {
+    "ToolType": "flat end mill",
+    "Description": "Spiral O 6*25mm Bright",
+    "Vendor": "Makera",
+    "cutting_feedrate": "1000",
+    "lead_in_feedrate": "1000",
+    "plunge_feedrate": "300",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.2",
+    "spindleSpeed": "10000",
+    "stepdown": "1"
+  }
+}

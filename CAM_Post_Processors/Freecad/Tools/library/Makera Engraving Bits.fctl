@@ -1,0 +1,386 @@
+{
+  "label": "Makera Engraving Bits",
+  "tools": [
+    {
+      "nr": 1,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.3_tip_Hardwood.fctb"
+    },
+    {
+      "nr": 2,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.3_tip_Plastic.fctb"
+    },
+    {
+      "nr": 3,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.3_tip_Softwood.fctb"
+    },
+    {
+      "nr": 4,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.4_tip_Hardwood.fctb"
+    },
+    {
+      "nr": 5,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.4_tip_Plastic.fctb"
+    },
+    {
+      "nr": 6,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.4_tip_Softwood.fctb"
+    },
+    {
+      "nr": 7,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.5_tip_Hardwood.fctb"
+    },
+    {
+      "nr": 8,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.5_tip_Plastic.fctb"
+    },
+    {
+      "nr": 9,
+      "path": "Makera_Two_Flute_Engraving_Bit_-_6mm_20_deg_.5_tip_Softwood.fctb"
+    },
+    {
+      "nr": 10,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_Aluminum.fctb"
+    },
+    {
+      "nr": 11,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_Brass.fctb"
+    },
+    {
+      "nr": 12,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_Copper.fctb"
+    },
+    {
+      "nr": 13,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 14,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_PCB.fctb"
+    },
+    {
+      "nr": 15,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 16,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 17,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_Aluminum.fctb"
+    },
+    {
+      "nr": 18,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_Brass.fctb"
+    },
+    {
+      "nr": 19,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_Copper.fctb"
+    },
+    {
+      "nr": 20,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 21,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_PCB.fctb"
+    },
+    {
+      "nr": 22,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 23,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 24,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_Aluminum.fctb"
+    },
+    {
+      "nr": 25,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_Brass.fctb"
+    },
+    {
+      "nr": 26,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_Copper.fctb"
+    },
+    {
+      "nr": 27,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 28,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_PCB.fctb"
+    },
+    {
+      "nr": 29,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 30,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 31,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.1mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 32,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.1mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 33,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.1mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 34,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.2mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 35,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.2mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 36,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.2mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 37,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.3mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 38,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.3mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 39,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.3mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 40,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.4mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 41,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.4mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 42,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.4mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 43,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.5mm_4mm_shaft_Hardwood.fctb"
+    },
+    {
+      "nr": 44,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.5mm_4mm_shaft_Plastic.fctb"
+    },
+    {
+      "nr": 45,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.5mm_4mm_shaft_Softwood.fctb"
+    },
+    {
+      "nr": 46,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_Aluminum.fctb"
+    },
+    {
+      "nr": 47,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_Brass.fctb"
+    },
+    {
+      "nr": 48,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_Copper.fctb"
+    },
+    {
+      "nr": 49,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_Hardwood.fctb"
+    },
+    {
+      "nr": 50,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_PCB.fctb"
+    },
+    {
+      "nr": 51,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_Plastic.fctb"
+    },
+    {
+      "nr": 52,
+      "path": "Makera_Single_Flute_Engraving_Metal_60_deg_.1mm_Softwood.fctb"
+    },
+    {
+      "nr": 53,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_Aluminum.fctb"
+    },
+    {
+      "nr": 54,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_Brass.fctb"
+    },
+    {
+      "nr": 55,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_Copper.fctb"
+    },
+    {
+      "nr": 56,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_Hardwood.fctb"
+    },
+    {
+      "nr": 57,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_PCB.fctb"
+    },
+    {
+      "nr": 58,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_Plastic.fctb"
+    },
+    {
+      "nr": 59,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.2mm_Softwood.fctb"
+    },
+    {
+      "nr": 60,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_Aluminum.fctb"
+    },
+    {
+      "nr": 61,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_Brass.fctb"
+    },
+    {
+      "nr": 62,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_Copper.fctb"
+    },
+    {
+      "nr": 63,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_Hardwood.fctb"
+    },
+    {
+      "nr": 64,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_PCB.fctb"
+    },
+    {
+      "nr": 65,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_Plastic.fctb"
+    },
+    {
+      "nr": 66,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.3mm_Softwood.fctb"
+    },
+    {
+      "nr": 67,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_Aluminum.fctb"
+    },
+    {
+      "nr": 68,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_Brass.fctb"
+    },
+    {
+      "nr": 69,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_Copper.fctb"
+    },
+    {
+      "nr": 70,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_Hardwood.fctb"
+    },
+    {
+      "nr": 71,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_PCB.fctb"
+    },
+    {
+      "nr": 72,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_Plastic.fctb"
+    },
+    {
+      "nr": 73,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.4mm_Softwood.fctb"
+    },
+    {
+      "nr": 74,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_Aluminum.fctb"
+    },
+    {
+      "nr": 75,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_Brass.fctb"
+    },
+    {
+      "nr": 76,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_Copper.fctb"
+    },
+    {
+      "nr": 77,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_Hardwood.fctb"
+    },
+    {
+      "nr": 78,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_PCB.fctb"
+    },
+    {
+      "nr": 79,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_Plastic.fctb"
+    },
+    {
+      "nr": 80,
+      "path": "Makera_Single_Flute_Engraving_Metal_30_deg_.5mm_Softwood.fctb"
+    },
+    {
+      "nr": 81,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.1mm_Hardwood.fctb"
+    },
+    {
+      "nr": 82,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.1mm_Plastic.fctb"
+    },
+    {
+      "nr": 83,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.1mm_Softwood.fctb"
+    },
+    {
+      "nr": 84,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.2mm_Hardwood.fctb"
+    },
+    {
+      "nr": 85,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.2mm_Plastic.fctb"
+    },
+    {
+      "nr": 86,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.2mm_Softwood.fctb"
+    },
+    {
+      "nr": 87,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.3mm_Hardwood.fctb"
+    },
+    {
+      "nr": 88,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.3mm_Plastic.fctb"
+    },
+    {
+      "nr": 89,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.3mm_Softwood.fctb"
+    },
+    {
+      "nr": 90,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.4mm_Hardwood.fctb"
+    },
+    {
+      "nr": 91,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.4mm_Plastic.fctb"
+    },
+    {
+      "nr": 92,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.4mm_Softwood.fctb"
+    },
+    {
+      "nr": 93,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.5mm_Hardwood.fctb"
+    },
+    {
+      "nr": 94,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.5mm_Plastic.fctb"
+    },
+    {
+      "nr": 95,
+      "path": "Makera_Single_Flute_Engraving_30_deg_.5mm_Softwood.fctb"
+    }
+  ],
+  "version": 1
+}

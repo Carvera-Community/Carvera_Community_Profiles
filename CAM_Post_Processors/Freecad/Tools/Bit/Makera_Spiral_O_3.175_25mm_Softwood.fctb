@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "name": "Makera_Spiral O 3.175*25mm_Softwood",
+  "shape": "Endmill.fcstd",
+  "shape-type": "Endmill",
+  "parameter": {
+    "Chipload": "50.00 \u00b5m",
+    "CuttingEdgeHeight": "25.000 mm",
+    "CuttingEdgeLength": "25.000 mm",
+    "Diameter": "3.175 mm",
+    "Length": "42.000 mm",
+    "ShankDiameter": "3.175",
+    "Material": "Carbide",
+    "Flutes": "1"
+  },
+  "attribute": {
+    "ToolType": "flat end mill",
+    "Description": "Spiral O 3.175*25mm",
+    "Vendor": "Makera",
+    "cutting_feedrate": "500",
+    "lead_in_feedrate": "500",
+    "plunge_feedrate": "300",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.2",
+    "spindleSpeed": "10000",
+    "stepdown": "2"
+  }
+}

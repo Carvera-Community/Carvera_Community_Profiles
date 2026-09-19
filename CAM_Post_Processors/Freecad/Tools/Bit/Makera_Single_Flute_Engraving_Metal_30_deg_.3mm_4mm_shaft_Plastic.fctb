@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "name": "Makera_Single Flute Engraving Metal 30 deg*.3mm 4mm shaft_Plastic",
+  "shape": "v-bit.fcstd",
+  "shape-type": "VBit",
+  "parameter": {
+    "Chipload": "83.33 \u00b5m",
+    "CuttingEdgeHeight": "7.000 mm",
+    "CuttingEdgeLength": "7.000 mm",
+    "Diameter": "4.000 mm",
+    "Length": "45.000 mm",
+    "CuttingEdgeAngle": 30.0,
+    "TipDiameter": "0.300 mm",
+    "ShankDiameter": "4",
+    "Material": "Carbide",
+    "Flutes": "1"
+  },
+  "attribute": {
+    "ToolType": "chamfer mill",
+    "Description": "Single Flute Engraving Metal 30 deg*.3mm 4mm shaft",
+    "Vendor": "Makera",
+    "cutting_feedrate": "999.997",
+    "lead_in_feedrate": "1000",
+    "plunge_feedrate": "500",
+    "ramp_feedrate": "333.333",
+    "rampAngle": "1.2",
+    "spindleSpeed": "12000",
+    "stepdown": "1",
+    "stepover": "0.03"
+  }
+}
