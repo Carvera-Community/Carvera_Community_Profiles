@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "Makera_TiN Coating Corn Bit 1.6*8.5mm_Carbon Fiber",
-  "shape": "Endmill.fcstd",
+  "shape": "endmill.fcstd",
   "shape-type": "Endmill",
   "parameter": {
     "Chipload": "20.83 \u00b5m",

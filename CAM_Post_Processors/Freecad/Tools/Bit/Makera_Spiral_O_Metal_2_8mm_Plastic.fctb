@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "Makera_Spiral O Metal 2*8mm_Plastic",
-  "shape": "Endmill.fcstd",
+  "shape": "endmill.fcstd",
   "shape-type": "Endmill",
   "parameter": {
     "Chipload": "83.33 \u00b5m",

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "Makera_Spiral O 1.5*8mm_Softwood",
-  "shape": "Endmill.fcstd",
+  "shape": "endmill.fcstd",
   "shape-type": "Endmill",
   "parameter": {
     "Chipload": "50.00 \u00b5m",

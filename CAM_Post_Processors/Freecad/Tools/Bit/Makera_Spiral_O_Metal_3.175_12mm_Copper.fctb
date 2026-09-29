@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "Makera_Spiral O Metal 3.175*12mm_Copper",
-  "shape": "Endmill.fcstd",
+  "shape": "endmill.fcstd",
   "shape-type": "Endmill",
   "parameter": {
     "Chipload": "25.00 \u00b5m",
