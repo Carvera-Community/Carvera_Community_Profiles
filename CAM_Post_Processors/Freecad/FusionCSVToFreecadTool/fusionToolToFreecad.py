@@ -198,6 +198,17 @@ def convert_row_to_json(row):
         if formatted:
             parameter["Crest"] = formatted
 
+    if toolTypeOut == "ThreadMill":
+        # Fusion stores the neck as the shoulder. Without these FreeCAD falls
+        # back to the thread-mill.fcstd defaults, which produce an unsolvable
+        # sketch for thread mills narrower than the default neck (M1-M4).
+        neckDiameter = format_with_units(get_value("Shoulder Diameter (tool_shoulderDiameter)"), unit)
+        if neckDiameter:
+            parameter["NeckDiameter"] = neckDiameter
+        neckLength = format_with_units(get_value("Shoulder Length (tool_shoulderLength)"), unit)
+        if neckLength:
+            parameter["NeckLength"] = neckLength
+
     parameter["ShankDiameter"] = get_value("Shaft Diameter (tool_shaftDiameter)")
     parameter["Material"] = "Carbide"
     parameter["Flutes"] = get_value("Number of Flutes (tool_numberOfFlutes)")
