@@ -5,7 +5,7 @@
   "shape-type": "Chamfer",
   "parameter": {
     "Chipload": "50.00 \u00b5m",
-    "CuttingEdgeHeight": "3.000 mm",
+    "CuttingEdgeHeight": "1.538 mm",
     "CuttingEdgeLength": "3.000 mm",
     "Diameter": "3.175 mm",
     "Length": "38.000 mm",

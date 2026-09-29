@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import json
+import math
 import os
 import re
 import unicodedata
@@ -197,6 +198,22 @@ def convert_row_to_json(row):
         formatted = format_with_units(crest, unit)
         if formatted:
             parameter["Crest"] = formatted
+
+    if toolTypeOut == "Chamfer":
+        # FreeCAD's chamfer.fcstd CuttingEdgeHeight is the height of the cone,
+        # and FreeCAD derives Diameter from TipDiameter, CuttingEdgeAngle and
+        # CuttingEdgeHeight. Fusion's flute length is not the cone height, so
+        # compute the height where the cone reaches the cutting diameter.
+        taperAngle = get_value("Taper Angle (tool_taperAngle)")
+        try:
+            height = (float(diameter) - float(TipDiameter or 0)) / 2 / math.tan(
+                math.radians(float(taperAngle))
+            )
+            formatted = format_with_units(height, unit)
+            if formatted:
+                parameter["CuttingEdgeHeight"] = formatted
+        except (TypeError, ValueError, ZeroDivisionError):
+            pass
 
     if toolTypeOut == "ThreadMill":
         # Fusion stores the neck as the shoulder. Without these FreeCAD falls
