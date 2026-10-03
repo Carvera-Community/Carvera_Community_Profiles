@@ -252,6 +252,13 @@ def convert_row_to_json(row):
 
     return {
         "version": 2,
+        # FreeCAD identifies a toolbit by its id. Without one, importing a
+        # single .fctb assigns a random UUID, so a toolbit already used in a
+        # document can never be matched back to this file once it changes.
+        # Use the filename stem, which is what FreeCAD itself uses as the id
+        # for its own toolbits and when importing a .fctl library, so it's
+        # stable across runs of this script.
+        "id": safe_filename(name),
         "name": name,
         "shape": shape,
         "shape-type": toolTypeOut,
@@ -276,7 +283,7 @@ for filename in os.listdir(input_dir):
             for row in reader:
                 tool_json = convert_row_to_json(row)
 
-                json_filename = safe_filename(tool_json["name"]) + ".fctb"
+                json_filename = tool_json["id"] + ".fctb"
                 with open(os.path.join(bit_dir, json_filename), "w", encoding="utf-8") as out_f:
                     json.dump(tool_json, out_f, indent=2)
                 tool_list.append({

@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Carvera_M4_Threadmill_Hardwood",
   "name": "Makera_Carvera M4 Threadmill_Hardwood",
   "shape": "thread-mill.fcstd",
   "shape-type": "ThreadMill",

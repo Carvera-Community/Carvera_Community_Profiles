@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_0.9_10mm_Drill_Aluminum",
   "name": "Makera_0.9*10mm Drill_Aluminum",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",

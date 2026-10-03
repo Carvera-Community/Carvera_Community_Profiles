@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Makera_Ball_Endmill_-_6_12mm_Softwood",
   "name": "Makera_Makera Ball Endmill - 6*12mm_Softwood",
   "shape": "ballend.fcstd",
   "shape-type": "Ballend",

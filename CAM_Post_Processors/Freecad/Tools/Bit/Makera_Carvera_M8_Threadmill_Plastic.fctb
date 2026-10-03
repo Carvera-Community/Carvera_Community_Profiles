@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Carvera_M8_Threadmill_Plastic",
   "name": "Makera_Carvera M8 Threadmill_Plastic",
   "shape": "thread-mill.fcstd",
   "shape-type": "ThreadMill",
