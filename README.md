@@ -69,6 +69,9 @@ Checkout the [Releases Page](https://github.com/MakeraInc/CarveraProfiles/releas
 
 ![F360 Post Process](/img/F360-Post-Process.png)
 
+3. Probing, Ext PWM appliances, actions and per-operation settings: see the
+   [Carvera Probing Post guide](CAM_Post_Processors/Fusion360-profiles/Carvera_Probing_Post.md).
+
 
 
 
