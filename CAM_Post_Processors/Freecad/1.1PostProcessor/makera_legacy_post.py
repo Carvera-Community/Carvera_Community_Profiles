@@ -48,6 +48,17 @@ now = datetime.datetime.now()
 parser = argparse.ArgumentParser(prog="linuxcnc", add_help=False)
 parser.add_argument("--header", action="store_true", help="output headers (default)")
 parser.add_argument("--no-header", action="store_true", help="suppress header output")
+parser.add_argument(
+    "--timestamp",
+    action="store_true",
+    help="include the current date/time in the header (default)",
+)
+parser.add_argument(
+    "--no-timestamp",
+    action="store_true",
+    help="suppress the current date/time in the header, keeping the rest "
+    "(tool table, etc.) - useful for diff-stable output",
+)
 parser.add_argument("--comments", action="store_true", help="output comment (default)")
 parser.add_argument("--no-comments", action="store_true", help="suppress comment output")
 parser.add_argument("--line-numbers", action="store_true", help="prefix with line numbers")
@@ -68,6 +79,11 @@ parser.add_argument(
 )
 parser.add_argument("--precision", default="4", help="number of digits of precision, default=4")
 parser.add_argument(
+    "--inches",
+    action="store_true",
+    help="output in inches instead of mm (default=mm)",
+)
+parser.add_argument(
     "--preamble",
     help='set commands to be issued before the first command, default="G90 G94\nG17"',
 )
@@ -87,6 +103,7 @@ TOOLTIP_ARGS = parser.format_help()
 # These globals set common customization preferences
 OUTPUT_COMMENTS = True
 OUTPUT_HEADER = True
+OUTPUT_TIMESTAMP = True
 IP_ADDR = None
 VERBOSE = False
 
@@ -354,6 +371,7 @@ def dump_tool_table(objectslist):
 
 def processArguments(argstring):
     global OUTPUT_HEADER
+    global OUTPUT_TIMESTAMP
     global OUTPUT_COMMENTS
     global SHOW_EDITOR
     global IP_ADDR
@@ -372,6 +390,10 @@ def processArguments(argstring):
             OUTPUT_HEADER = False
         if args.header:
             OUTPUT_HEADER = True
+        if args.no_timestamp:
+            OUTPUT_TIMESTAMP = False
+        if args.timestamp:
+            OUTPUT_TIMESTAMP = True
         if args.no_comments:
             OUTPUT_COMMENTS = False
         if args.comments:
@@ -434,7 +456,8 @@ def export(objectslist, filename, argstring):
     if OUTPUT_HEADER:
         gcode += "(Exported by FreeCAD)\n"
         gcode += "(Post Processor: " + __name__ + ")\n"
-        gcode += "(Output Time:" + str(now) + ")\n"
+        if OUTPUT_TIMESTAMP:
+            gcode += "(Output Time:" + str(now) + ")\n"
         gcode += dump_tool_table(objectslist)
 
     # Write the preamble
@@ -576,8 +599,22 @@ def sendToSmoothie(ip, GCODE, fname):
     FreeCAD.Console.PrintMessage("Upload complete\n")
 
 
+def fmt_num(value, precision_string):
+    # avoid emitting "-0.0000" for values that round to zero, which
+    # causes needless diff churn between otherwise identical files
+    s = format(float(value), precision_string)
+    if s.startswith("-") and float(s) == 0.0:
+        s = s[1:]
+    return s
+
+
 def parse(pathobj):
     global SPINDLE_SPEED
+    global CURRENT_X
+    global CURRENT_Y
+    global CURRENT_Z
+    global DRILL_RETRACT_MODE
+    global MOTION_MODE
     import sys
     out = ""
     lastcommand = None
@@ -636,8 +673,8 @@ def parse(pathobj):
 
                             outstring.append(
                                 param
-                                + format(
-                                    float(speed.getValueAs(UNIT_SPEED_FORMAT)),
+                                + fmt_num(
+                                    speed.getValueAs(UNIT_SPEED_FORMAT),
                                     precision_string,
                                 )
                             )
@@ -654,10 +691,11 @@ def parse(pathobj):
                     else:
                         pos = Units.Quantity(c.Parameters[param], FreeCAD.Units.Length)
                         outstring.append(
-                            param + format(float(pos.getValueAs(UNIT_FORMAT)), precision_string)
+                            param + fmt_num(pos.getValueAs(UNIT_FORMAT), precision_string)
                         )
             if command in ["G1", "G01", "G2", "G02", "G3", "G03"]:
-                outstring.append("S" + str(SPINDLE_SPEED))
+                if "S" not in c.Parameters:
+                    outstring.append("S" + str(SPINDLE_SPEED))
                 if SPINDLE_SPEED <5 :
                     FreeCAD.Console.PrintError(
                         "spindle speed of zero found"
@@ -696,7 +734,7 @@ def parse(pathobj):
 
             if command == "message":
                 if OUTPUT_COMMENTS is False:
-                    out = []
+                    outstring = []
                 else:
                     outstring.pop(0)  # remove the command
 
@@ -765,12 +803,12 @@ def drill_translate(outstring, cmd, params):
     else:
         clear_Z = param_R
 
-    strG0_clear_Z = "G0 Z" + format(float(clear_Z.getValueAs(UNIT_FORMAT)), strFormat) + "\n"
-    strG0_param_R = "G0 Z" + format(float(param_R.getValueAs(UNIT_FORMAT)), strFormat) + "\n"
+    strG0_clear_Z = "G0 Z" + fmt_num(clear_Z.getValueAs(UNIT_FORMAT), strFormat) + "\n"
+    strG0_param_R = "G0 Z" + fmt_num(param_R.getValueAs(UNIT_FORMAT), strFormat) + "\n"
 
     # get the other parameters
     drill_feedrate = Units.Quantity(params["F"], FreeCAD.Units.Velocity)
-    strF_Feedrate = " F" + format(float(drill_feedrate.getValueAs(UNIT_SPEED_FORMAT)), ".2f") + "\n"
+    strF_Feedrate = " F" + fmt_num(drill_feedrate.getValueAs(UNIT_SPEED_FORMAT), ".2f") + "\n"
 
     if cmd == "G83":
         drill_Step = Units.Quantity(params["Q"], FreeCAD.Units.Length)
@@ -799,9 +837,9 @@ def drill_translate(outstring, cmd, params):
             trBuff += strG0_param_R
         trBuff += (
             "G0 X"
-            + format(float(param_X.getValueAs(UNIT_FORMAT)), strFormat)
+            + fmt_num(param_X.getValueAs(UNIT_FORMAT), strFormat)
             + " Y"
-            + format(float(param_Y.getValueAs(UNIT_FORMAT)), strFormat)
+            + fmt_num(param_Y.getValueAs(UNIT_FORMAT), strFormat)
             + "\n"
         )
         if CURRENT_Z > param_R:
@@ -813,7 +851,7 @@ def drill_translate(outstring, cmd, params):
         if cmd in ("G81", "G82"):
             trBuff += (
                 "G1 Z"
-                + format(float(param_Z.getValueAs(UNIT_FORMAT)), strFormat)
+                + fmt_num(param_Z.getValueAs(UNIT_FORMAT), strFormat)
                 + strF_Feedrate
             )
             # pause where applicable
@@ -829,8 +867,8 @@ def drill_translate(outstring, cmd, params):
                         )  # rapid move to just short of last drilling depth
                         trBuff += (
                             "G0 Z"
-                            + format(
-                                float(clearance_depth.getValueAs(UNIT_FORMAT)),
+                            + fmt_num(
+                                clearance_depth.getValueAs(UNIT_FORMAT),
                                 strFormat,
                             )
                             + "\n"
@@ -839,7 +877,7 @@ def drill_translate(outstring, cmd, params):
                     if next_Stop_Z > param_Z:
                         trBuff += (
                             "G1 Z"
-                            + format(float(next_Stop_Z.getValueAs(UNIT_FORMAT)), strFormat)
+                            + fmt_num(next_Stop_Z.getValueAs(UNIT_FORMAT), strFormat)
                             + strF_Feedrate
                         )
                         trBuff += strG0_clear_Z
@@ -847,14 +885,16 @@ def drill_translate(outstring, cmd, params):
                     else:
                         trBuff += (
                             "G1 Z"
-                            + format(float(param_Z.getValueAs(UNIT_FORMAT)), strFormat)
+                            + fmt_num(param_Z.getValueAs(UNIT_FORMAT), strFormat)
                             + strF_Feedrate
                         )
                         trBuff += strG0_clear_Z
                         break
 
     except Exception as e:
-        pass
+        FreeCAD.Console.PrintError(
+            "drill cycle translation failed: {}\n".format(e)
+        )
 
     if MOTION_MODE == "G91":
         trBuff += "G91"  # Restore if changed
