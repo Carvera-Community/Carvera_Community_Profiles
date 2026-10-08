@@ -132,6 +132,14 @@ properties = {
     value: true,
     scope: "post"
   },
+  writeMKRHeader: {
+    title      : "Write MKR Header for MakeraStudio",
+    description: "Write MKR Header for MakeraStudio",
+    group      : "4. File Structure",
+    type       : "boolean",
+    value: true,
+    scope: "post"
+  },
   laserEtchPower: {
     title      : "Laser etch power",
     description: "Sets the laser etch power.",
@@ -647,6 +655,26 @@ function dumpToolInformation() {
   }
 }
 
+function dumpMKRHeader(machineConfiguration) {
+  writeln(";@MKR|BEGIN");
+  writeln(";@MKR|SCHEMA|v=1.0.0");
+
+  if (machineConfiguration.getVendor() === "Makera" && (machineConfiguration.getModel() || "").substr(0, 3) === "Z1 ") {
+    writeln(";@MKR|MACHINE|id=Z1|name=Makera Z1");
+  }
+
+  var tools = getToolTable();
+  for (var i = 0; i < tools.getNumberOfTools(); ++i) {
+    var tool = tools.getTool(i);
+    var comment = ";@MKR|TOOL|number=" + toolFormat.format(tool.number);
+    comment += "|name=" + tool.description;
+    writeln(comment)
+  }
+
+  writeln(";@MKR|END")
+  writeln("")
+}
+
 function defineMachine() {
   if (false) { // note: setup your machine here
     var aAxis = createAxis({coordinate:0, table:true, axis:[1, 0, 0], cyclic:true, tcp:false});
@@ -710,6 +738,11 @@ function onOpen(section) {
 
   if (!getProperty("separateWordsWithSpace")) {
     setWordSeparator("");
+  }
+
+  // Unfortunately these needs to be first for MakeraStudio to see it
+  if (getProperty("writeMKRHeader")) {
+    dumpMKRHeader(machineConfiguration);
   }
 
   if (programName) {
