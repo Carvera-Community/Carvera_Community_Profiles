@@ -1,50 +1,20 @@
 #!/usr/bin/env python3
 import csv
 import json
+import math
 import os
 import re
 import unicodedata
-import argparse
 
 # ------------------------------------------------------------
-# Argument parsing
+# Input and output directories, relative to this script so it can be run
+# from anywhere and writes straight into the files tracked in the repo
 # ------------------------------------------------------------
-parser = argparse.ArgumentParser(description="Convert tool CSVs to .fctb/.fctl")
-parser.add_argument(
-    "--overwrite",
-    choices=["overwrite", "append", "skip"],
-    default="append",
-    help="File handling mode: overwrite | append | skip"
-)
-parser.add_argument(
-    "--dry-run",
-    action="store_true",
-    help="Perform a trial run with no file writes"
-)
-args = parser.parse_args()
-
-MODE = args.overwrite
-DRY_RUN = args.dry_run
-
-# ------------------------------------------------------------
-# Output directories
-# ------------------------------------------------------------
-output_dir = "output"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+input_dir = os.path.normpath(os.path.join(script_dir, "..", "..", "Fusion360-profiles", "Tool Files", "csv"))
+output_dir = os.path.normpath(os.path.join(script_dir, "..", "Tools"))
 bit_dir = os.path.join(output_dir, "Bit")
-library_dir = os.path.join(output_dir, "Library")
-
-os.makedirs(bit_dir, exist_ok=True)
-os.makedirs(library_dir, exist_ok=True)
-
-# ------------------------------------------------------------
-# Summary counters
-# ------------------------------------------------------------
-summary = {
-    "created": 0,
-    "overwritten": 0,
-    "skipped": 0,
-    "appended": 0,
-}
+library_dir = os.path.join(output_dir, "library")
 
 # ------------------------------------------------------------
 # Helpers
@@ -97,39 +67,6 @@ def format_with_units(value, source_unit):
     if abs(v) < 0.1:
         return f"{v * 1000:.2f} \u00b5m"
     return f"{v:.3f} mm"
-
-def resolve_conflict(path):
-    """
-    Apply overwrite mode rules:
-    - overwrite: return original path
-    - skip: return None if file already exists
-    - append: return new path like name_1.ext
-    """
-    exists = os.path.exists(path)
-
-    if MODE == "overwrite":
-        if exists:
-            summary["overwritten"] += 1
-        return path
-
-    if not exists:
-        return path
-
-    if MODE == "skip":
-        summary["skipped"] += 1
-        return None
-
-    if MODE == "append":
-        base, ext = os.path.splitext(path)
-        i = 1
-        new_path = f"{base}_{i}{ext}"
-        while os.path.exists(new_path):
-            i += 1
-            new_path = f"{base}_{i}{ext}"
-
-        summary["appended"] += 1
-        return new_path
-
 
 # ------------------------------------------------------------
 # Main conversion logic
@@ -262,6 +199,33 @@ def convert_row_to_json(row):
         if formatted:
             parameter["Crest"] = formatted
 
+    if toolTypeOut == "Chamfer":
+        # FreeCAD's chamfer.fcstd CuttingEdgeHeight is the height of the cone,
+        # and FreeCAD derives Diameter from TipDiameter, CuttingEdgeAngle and
+        # CuttingEdgeHeight. Fusion's flute length is not the cone height, so
+        # compute the height where the cone reaches the cutting diameter.
+        taperAngle = get_value("Taper Angle (tool_taperAngle)")
+        try:
+            height = (float(diameter) - float(TipDiameter or 0)) / 2 / math.tan(
+                math.radians(float(taperAngle))
+            )
+            formatted = format_with_units(height, unit)
+            if formatted:
+                parameter["CuttingEdgeHeight"] = formatted
+        except (TypeError, ValueError, ZeroDivisionError):
+            pass
+
+    if toolTypeOut == "ThreadMill":
+        # Fusion stores the neck as the shoulder. Without these FreeCAD falls
+        # back to the thread-mill.fcstd defaults, which produce an unsolvable
+        # sketch for thread mills narrower than the default neck (M1-M4).
+        neckDiameter = format_with_units(get_value("Shoulder Diameter (tool_shoulderDiameter)"), unit)
+        if neckDiameter:
+            parameter["NeckDiameter"] = neckDiameter
+        neckLength = format_with_units(get_value("Shoulder Length (tool_shoulderLength)"), unit)
+        if neckLength:
+            parameter["NeckLength"] = neckLength
+
     parameter["ShankDiameter"] = get_value("Shaft Diameter (tool_shaftDiameter)")
     parameter["Material"] = "Carbide"
     parameter["Flutes"] = get_value("Number of Flutes (tool_numberOfFlutes)")
@@ -299,15 +263,12 @@ def convert_row_to_json(row):
 # ------------------------------------------------------------
 # Process all CSVs
 # ------------------------------------------------------------
-input_dir = "."
-
 for filename in os.listdir(input_dir):
     if filename.lower().endswith(".csv"):
         csv_path = os.path.join(input_dir, filename)
         print(f"Processing {csv_path} ...")
 
         tool_list = []
-        nr = 1
 
         with open(csv_path, newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)
@@ -316,25 +277,15 @@ for filename in os.listdir(input_dir):
                 tool_json = convert_row_to_json(row)
 
                 json_filename = safe_filename(tool_json["name"]) + ".fctb"
-                filepath = os.path.join(bit_dir, json_filename)
-                final_path = resolve_conflict(filepath)
-
-                if final_path and not DRY_RUN:
-                    with open(final_path, "w", encoding="utf-8") as out_f:
-                        json.dump(tool_json, out_f, indent=2)
-                    summary["created"] += 1
-
-                if final_path:
-                    tool_list.append({
-                        "nr": nr,
-                        "path": os.path.basename(final_path)
-                    })
-                    nr += 1
+                with open(os.path.join(bit_dir, json_filename), "w", encoding="utf-8") as out_f:
+                    json.dump(tool_json, out_f, indent=2)
+                tool_list.append({
+                    "nr": len(tool_list) + 1,
+                    "path": json_filename
+                })
 
         # Write the .fctl file
         fctl_name = os.path.splitext(filename)[0] + ".fctl"
-        fctl_path = os.path.join(library_dir, fctl_name)
-        fctl_final = resolve_conflict(fctl_path)
 
         fctl_json = {
             "label": os.path.splitext(filename)[0],
@@ -342,20 +293,6 @@ for filename in os.listdir(input_dir):
             "version": 1
         }
 
-        if fctl_final and not DRY_RUN:
-            with open(fctl_final, "w", encoding="utf-8") as fctl_out:
-                json.dump(fctl_json, fctl_out, indent=2)
-            summary["created"] += 1
-
-# ------------------------------------------------------------
-# Summary output
-# ------------------------------------------------------------
-print("\n========== SUMMARY ==========")
-print(f"Mode:        {MODE}")
-print(f"Dry run:     {DRY_RUN}")
-print(f"Created:     {summary['created']}")
-print(f"Overwritten: {summary['overwritten']}")
-print(f"Appended:    {summary['appended']}")
-print(f"Skipped:     {summary['skipped']}")
-print("================================\n")
-
+        with open(os.path.join(library_dir, fctl_name), "w", encoding="utf-8") as fctl_out:
+            json.dump(fctl_json, fctl_out, indent=2)
+        print(f"Wrote {len(tool_list)} toolbits and {fctl_name}")

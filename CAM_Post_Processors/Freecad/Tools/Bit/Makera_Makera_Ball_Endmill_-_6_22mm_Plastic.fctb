@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "Makera_Makera Ball Endmill - 6*22mm_Plastic",
-  "shape": "Ballend.fcstd",
+  "shape": "ballend.fcstd",
   "shape-type": "Ballend",
   "parameter": {
     "Chipload": "20.83 \u00b5m",
