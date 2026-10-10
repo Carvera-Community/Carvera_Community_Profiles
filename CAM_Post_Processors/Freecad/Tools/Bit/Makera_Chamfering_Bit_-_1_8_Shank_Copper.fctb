@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Chamfering_Bit_-_1_8_Shank_Copper",
   "name": "Makera_Chamfering Bit - 1/8\u2033 Shank_Copper",
   "shape": "chamfer.fcstd",
   "shape-type": "Chamfer",

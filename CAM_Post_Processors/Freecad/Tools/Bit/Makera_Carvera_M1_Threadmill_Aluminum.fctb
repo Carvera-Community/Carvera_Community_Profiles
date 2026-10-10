@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Carvera_M1_Threadmill_Aluminum",
   "name": "Makera_Carvera M1 Threadmill_Aluminum",
   "shape": "thread-mill.fcstd",
   "shape-type": "ThreadMill",

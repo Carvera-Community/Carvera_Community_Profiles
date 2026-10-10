@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_TiN_Coating_Corn_Bit_1_7mm_PCB",
   "name": "Makera_TiN Coating Corn Bit 1*7mm_PCB",
   "shape": "endmill.fcstd",
   "shape-type": "Endmill",

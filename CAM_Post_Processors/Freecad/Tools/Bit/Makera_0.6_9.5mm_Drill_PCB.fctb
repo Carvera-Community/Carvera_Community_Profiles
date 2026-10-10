@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_0.6_9.5mm_Drill_PCB",
   "name": "Makera_0.6*9.5mm Drill_PCB",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",
