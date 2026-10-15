@@ -232,15 +232,63 @@ properties = {
     value      : false,
     scope      : "post"
   },
+  probeToolBehavior: {
+    title      : "Probing Firmware",
+    description: "Firmware used for WCS probing operations. Stock firmware: probing-x, -y, -z and corners with G38 touches. Community firmware: also walls, channels, holes, bosses and angles, with the probing macros M461-M466 and M468 (needs a firmware with M468). It positions with G1 so the 3D probe crash detection halts on contact, which requires the probe as tool >= 999990.",
+    group      : "1. Preferences",
+    type       : "enum",
+    values     : [
+      {title:"Stock firmware", id:"stock"},
+      {title:"Community firmware", id:"community"}
+    ],
+    value      : "stock",
+    scope      : "post"
+  },
+  probeMeasureOnly: {
+    title      : "Probing: Measure Only",
+    description: "Community firmware: Probe WCS operations measure and check the target WCS (M468 V1) but do not change it. Fusion's checks and Print results work as usual. Can also be set per operation.",
+    group      : "1. Preferences",
+    type       : "boolean",
+    value      : false,
+    scope      : ["post", "operation"]
+  },
+  probeSensorType: {
+    title      : "Probe Sensor Type",
+    description: "NC (normally closed) or NO (normally open). If this does not match the probe, the probe will not stop on contact and WILL crash.",
+    group      : "1. Preferences",
+    type       : "enum",
+    values     : [
+      {title:"NC (normally closed)", id:"NC"},
+      {title:"NO (normally open)", id:"NO"}
+    ],
+    value      : "NC",
+    scope      : "post"
+  },
 };
 
 // wcs definiton
 wcsDefinitions = {
   useZeroOffset: false,
   wcs          : [
-    {name:"Standard", format:"G", range:[54, 59]}
+    {name:"Standard", format:"G", range:[54, 59]},
+    {name:"Extended", format:"G59.", range:[1, 3]}
   ]
 };
+
+/** G code of work offset n (1 = G54, 7 = G59.1), counted through the ranges of wcsDefinitions. */
+function getWcsCode(n) {
+  var index = Math.max(n, 1);
+  for (var i = 0; i < wcsDefinitions.wcs.length; ++i) {
+    var range = wcsDefinitions.wcs[i].range;
+    var count = range[1] - range[0] + 1;
+    if (index <= count) {
+      return wcsDefinitions.wcs[i].format + (range[0] + index - 1);
+    }
+    index -= count;
+  }
+  error(subst(localize("Work offset %1 is out of range."), n));
+  return "";
+}
 
 var numberOfToolSlots = 9999;
 var previousToolChangeWasManual = false;
@@ -311,6 +359,7 @@ var WARNING_WORK_OFFSET = 0;
 var forceSpindleSpeed = false;
 var currentWorkOffset;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
+var probeZUnknown = false; // first operation is a Z probe, so WCS Z is unknown until it has run
 
 /**
   Writes the specified block.
@@ -1136,9 +1185,10 @@ function forceAny() {
   feedOutput.reset();
 }
 
+/** Probe WCS ("probe") or Probe Geometry ("probe_geometry"), which measures and checks without changing a WCS. */
 function isProbeOperation() {
   return hasParameter("operation-strategy") &&
-    (getParameter("operation-strategy") == "probe");
+    (getParameter("operation-strategy") == "probe" || getParameter("operation-strategy") == "probe_geometry");
 }
 
 var currentWorkPlaneABC = undefined;
@@ -1469,7 +1519,7 @@ function onSection() {
     var shankDiameterChanged = !isFirstSection() && (Math.abs(shaftDiameterMm - prevShaftMm) > 0.001);
     var shaftParam = (shankDiameterChanged || isFirstSection()) ? getShankSizeSuffix(shaftDiameterMm) : "";
 
-    if (tool.number > numberOfToolSlots) {
+    if (tool.number > numberOfToolSlots && tool.type != TOOL_PROBE) { // community firmware probes use 999990+
       warning(localize("Tool number exceeds maximum value."));
     }
 
@@ -1639,8 +1689,14 @@ function onSection() {
 
   forceXYZ();
 
+  probeZUnknown = isFirstSection() && getParameter("operation-strategy", "") == "probe" &&
+    getParameter("operation:probingType", "") == "probing-z";
+
+  // probing cycles position the probe themselves
+  var probing = isProbeOperation();
+
   var initialPosition = getFramePosition(currentSection.getInitialPosition());
-  if (!retracted) {
+  if (!retracted && !probing) {
     if (getCurrentPosition().z < initialPosition.z) {
       writeBlock(gMotionModal.format(0), zOutput.format(initialPosition.z));
     }
@@ -1648,7 +1704,7 @@ function onSection() {
 
   if (insertToolCall || retracted) {
     var lengthOffset = tool.lengthOffset;
-    if (lengthOffset > numberOfToolSlots) {
+    if (lengthOffset > numberOfToolSlots && tool.type != TOOL_PROBE) {
       error(localize("Length offset out of range."));
       return;
     }
@@ -1656,7 +1712,9 @@ function onSection() {
     gMotionModal.reset();
     writeBlock(gPlaneModal.format(17));
 
-    if (!machineConfiguration.isHeadConfiguration()) {
+    if (probing) {
+      // positioned in onCyclePoint
+    } else if (!machineConfiguration.isHeadConfiguration()) {
       writeBlock(
         gAbsIncModal.format(90),
         gMotionModal.format(0), xOutput.format(initialPosition.x), yOutput.format(initialPosition.y)
@@ -1671,7 +1729,7 @@ function onSection() {
         zOutput.format(initialPosition.z)
       );
     }
-  } else {
+  } else if (!probing) {
     writeBlock(
       gAbsIncModal.format(90),
       gMotionModal.format(0),
@@ -1746,6 +1804,439 @@ function onSpindleSpeed(spindleSpeed) {
   writeBlock(sOutput.format(spindleSpeed), mFormat.format(tool.clockwise ? 3 : 4));
 }
 
+// >>>>> WCS PROBING
+// Community firmware: each probing cycle runs a probing macro (M461-M466), which uses the
+// calibrated tip diameter #150, and M468 writes the result to the target WCS at the nominal
+// position. Positioning moves are G1, so the 3D probe crash detection halts on contact.
+// Fusion's probe checks and Print results are done by M468 and need the community firmware.
+// Stock firmware: plain G38.x touches and G10 L20. Cycle positions are the probe ball center. A
+// touch stops with the ball center one probe radius in front of the surface, i.e. at
+// start + approach * probeClearance, which is the value written with G10 L20.
+// The firmware always moves G38.x relative, G91 is written for clarity.
+
+var probe = undefined; // state of the current probing cycle
+var probeZSearchDistance = toPreciseUnit(120, MM); // Z search distance when WCS Z is still unknown
+
+function isProbingCycle() {
+  return String(cycleType).indexOf("probing-") == 0;
+}
+
+function onCycle() {
+  if (!isProbingCycle()) {
+    return;
+  }
+  if (tool.type != TOOL_PROBE) {
+    error(localize("Probing cycles require a probe tool."));
+    return;
+  }
+
+  var isNO = getProperty("probeSensorType") == "NO";
+  var community = getProperty("probeToolBehavior") == "community";
+  var wcs = currentSection.probeWorkOffset > 0 ? currentSection.probeWorkOffset : currentSection.workOffset;
+  probe = {
+    wcs        : Math.max(wcs, 1), // G54 = P1
+    drivingWcs : Math.max(currentSection.workOffset, 1),
+    measureCode: isNO ? "G38.2" : "G38.4", // NO probes trigger inverted, so stop on loss of the trigger
+    // community firmware halts on any probe contact during G0/G1 (3D probe crash detection), while
+    // G38.3 only stops silently, so positioning moves use G1 there
+    protectCode: community ? gFormat.format(1) : (isNO ? "G38.3" : "G38.5"),
+    linkFeed   : getParameter("operation:tool_feedProbeLink", cycle.feedrate),
+    entryFeed  : getParameter("operation:tool_feedEntry", cycle.feedrate),
+    measureFeed: getParameter("operation:tool_feedProbeMeasure", cycle.feedrate),
+    backoff    : Math.max(Math.min(cycle.probeClearance, toPreciseUnit(2, MM)), toPreciseUnit(0.5, MM)),
+    safeZ      : (cycle.clearance !== undefined) ? cycle.clearance : cycle.retract,
+    community  : community,
+    // Probe Geometry measures and checks in the driving WCS and writes no WCS
+    geometry   : getParameter("operation-strategy", "") == "probe_geometry",
+    writeWcs   : getParameter("operation-strategy", "") != "probe_geometry" && !getProperty("probeMeasureOnly"),
+    // Fusion's probe checks, "stop-message" being the only action
+    checkPosition: cycle.outOfPositionAction == "stop-message",
+    checkSize    : cycle.wrongSizeAction == "stop-message",
+    checkAngle   : cycle.angleAskewAction == "stop-message"
+  };
+  if (!(probe.linkFeed > 0 && probe.entryFeed > 0 && probe.measureFeed > 0)) {
+    error(localize("Probing feedrates are not defined."));
+    return;
+  }
+  if (cycle.updateToolWear) {
+    error(localize("Updating tool wear is not possible: the Carvera has no tool wear offsets."));
+    return;
+  }
+  if (probe.checkPosition || probe.checkSize || probe.checkAngle) {
+    if (!community) {
+      error(localize("Probe checks (out of position, wrong size, angle askew) need the community firmware."));
+      return;
+    }
+    if ((probe.checkPosition && !(cycle.tolerancePosition > 0)) || (probe.checkSize && !(cycle.toleranceSize > 0)) ||
+      (probe.checkAngle && !(cycle.toleranceAngle > 0))) {
+      error(localize("A probe check needs a tolerance greater than 0."));
+      return;
+    }
+  }
+  if (!probe.writeWcs) {
+    if (!community) {
+      error(localize(probe.geometry ? "Probe Geometry needs the community firmware." : "Probing: Measure Only needs the community firmware."));
+      return;
+    }
+    if (probe.geometry) {
+      probe.wcs = probe.drivingWcs;
+    } // measure only keeps the target WCS: it checks the WCS that probing would set
+    if (!probe.checkPosition && !probe.checkSize && !probe.checkAngle && !cycle.printResults) {
+      warning(subst(localize("Probing operation '%1' only measures, but neither checks nor prints its results."), getParameter("operation-comment", cycleType)));
+    }
+  }
+  if (cycle.printResults && !community) {
+    warning(localize("Print results needs the community firmware and is ignored."));
+  }
+  if (community && tool.number < 999990) {
+    warning(localize("Community firmware only enables 3D probe crash detection for probe tool numbers >= 999990."));
+  }
+
+  writeComment("begin " + cycleType + (probe.writeWcs ? " - update " : " - check in ") + getWcsCode(probe.wcs));
+}
+
+function writeProbeBlock(mode, code, feed, xyz) {
+  var words = [gAbsIncModal.format(mode), code];
+  if (xyz.x !== undefined) {
+    words.push("X" + xyzFormat.format(xyz.x));
+  }
+  if (xyz.y !== undefined) {
+    words.push("Y" + xyzFormat.format(xyz.y));
+  }
+  if (xyz.z !== undefined) {
+    words.push("Z" + xyzFormat.format(xyz.z));
+  }
+  if (feed !== undefined) {
+    words.push("F" + feedFormat.format(feed));
+  }
+  writeBlock.apply(this, words);
+}
+
+function axisValue(axis, value) {
+  var xyz = {};
+  xyz[axis] = value;
+  return xyz;
+}
+
+/** Relative positioning move that stops on contact (G38.3/G38.5) or halts via crash detection (community G1). */
+function probeProtectedMove(xyz) {
+  writeProbeBlock(91, probe.protectCode, probe.linkFeed, xyz);
+}
+
+/** Double touch along one axis. Leaves the probe in contact with the surface. */
+function probeTouch(axis, distance) {
+  var direction = distance > 0 ? 1 : -1;
+  writeProbeBlock(91, probe.measureCode, probe.entryFeed, axisValue(axis, distance));
+  writeProbeBlock(91, gFormat.format(1), probe.linkFeed, axisValue(axis, -direction * probe.backoff));
+  writeProbeBlock(91, probe.measureCode, probe.measureFeed, axisValue(axis, direction * (probe.backoff + cycle.probeOvertravel)));
+}
+
+/**
+  Sets the given axis of the target WCS so that the current position becomes value. The stock
+  firmware works out G10 L20 Pn from the active WCS, so the target WCS is active for the write.
+*/
+function probeSetWCS(axis, value) {
+  var switchWcs = probe.wcs != probe.drivingWcs;
+  if (switchWcs) {
+    writeBlock(getWcsCode(probe.wcs));
+  }
+  writeBlock(gFormat.format(10), "L20", "P" + probe.wcs, axis.toUpperCase() + xyzFormat.format(value));
+  if (switchWcs) {
+    writeBlock(currentSection.wcs);
+  }
+}
+
+/** Touches the wall in front of start along axis, updates the WCS and returns to start. */
+function probeWall(axis, start, direction) {
+  probeTouch(axis, direction * (cycle.probeClearance + cycle.probeOvertravel));
+  probeSetWCS(axis, start + direction * cycle.probeClearance);
+  writeProbeBlock(90, gFormat.format(1), probe.linkFeed, axisValue(axis, start));
+}
+
+/** Lowers from the clearance height to the retract height (cycle.stock), stopping without an error on contact. */
+function probeLowerToRetract() {
+  if (cycle.stock < probe.safeZ) {
+    writeProbeBlock(91, probe.measureCode == "G38.4" ? "G38.5" : "G38.3", probe.linkFeed, {z:cycle.stock - probe.safeZ});
+    writeBlock(gAbsIncModal.format(90));
+  }
+}
+
+/** E word of M462/M464 started at the retract height: they lower by E + #150/2, which puts the tip at probeZ. */
+function probeMacroDepth(probeZ) {
+  var lower = cycle.stock - probeZ;
+  if (!(lower > tool.diameter / 2)) {
+    error(localize("The probing height must be below the retract height by more than the probe radius."));
+    return "";
+  }
+  return "E[" + xyzFormat.format(lower) + "-#150/2]";
+}
+
+/**
+  Runs a community firmware probing macro (M461-M466) and writes its result to the target WCS with
+  M468. nominal holds the X, Y, Z or Q (angle) of the probed feature, sizes its nominal D (X) and E (Y) size.
+  Fusion's checks become M468 tolerances (R position, H size, B angle), which halt without writing
+  the WCS when they fail, and Print results becomes W1.
+*/
+function probeMacro(words, nominal, sizes) {
+  if (unit != MM) {
+    error(localize("Probing with the community firmware macros requires a metric program."));
+    return;
+  }
+  writeBlock.apply(this, words.concat([
+    "F" + feedFormat.format(probe.entryFeed),
+    "K" + feedFormat.format(probe.linkFeed),
+    "R" + xyzFormat.format(probe.backoff),
+    probe.measureCode == "G38.4" ? "I1" : "" // same probe input sense as the G38 moves
+  ]));
+
+  var result = ["M468", "P" + probe.wcs];
+  for (var axis in nominal) {
+    result.push(axis + xyzFormat.format(nominal[axis]));
+  }
+  var hasPosition = nominal.X !== undefined || nominal.Y !== undefined || nominal.Z !== undefined;
+  if (sizes && (probe.checkSize || cycle.printResults)) {
+    for (var size in sizes) {
+      result.push(size + xyzFormat.format(sizes[size]));
+    }
+  }
+  if (probe.checkPosition) {
+    if (hasPosition) {
+      result.push("R" + xyzFormat.format(cycle.tolerancePosition));
+    } else {
+      warning(subst(localize("The out of position check is not available for '%1' and is ignored."), cycleType));
+    }
+  }
+  if (probe.checkSize) {
+    if (sizes) {
+      result.push("H" + xyzFormat.format(cycle.toleranceSize));
+    } else {
+      warning(subst(localize("The wrong size check is not available for '%1' and is ignored."), cycleType));
+    }
+  }
+  if (probe.checkAngle) {
+    if (nominal.Q !== undefined) {
+      result.push("B" + xyzFormat.format(cycle.toleranceAngle));
+    } else {
+      warning(subst(localize("The angle askew check is not available for '%1' and is ignored."), cycleType));
+    }
+  }
+  if (cycle.printResults) {
+    result.push("W1");
+  }
+  if (!probe.writeWcs) {
+    result.push("V1");
+  }
+  writeBlock.apply(this, result);
+}
+
+function onCyclePoint(x, y, z) {
+  if (!isProbingCycle()) {
+    expandCyclePoint(x, y, z);
+    return;
+  }
+  if (!isSameDirection(machineConfiguration.getSpindleAxis(), getRotation().forward)) {
+    error(localize("Probing is only supported with the tool axis along the spindle axis."));
+    return;
+  }
+
+  var a1 = (cycle.approach1 == "positive") ? 1 : -1;
+  var a2 = (cycle.approach2 == "positive") ? 1 : -1;
+  var spacing = (cycle.probeSpacing > 0) ? cycle.probeSpacing : 0;
+  var probeZ = z - cycle.depth; // probing height of the tip, expected surface for probing-z
+  var clearance = cycle.probeClearance + tool.diameter / 2; // from the start (ball centre) to the surface
+  var reach = cycle.probeClearance + cycle.probeOvertravel; // touch distance from the start
+  // nominal corner (wall surfaces) for corner cycles
+  var cornerX = x + a1 * clearance;
+  var cornerY = y + a2 * clearance;
+  // outer corner: distance of the measuring points from the corner, and travel past each wall
+  var inset = spacing || clearance;
+  var travel = clearance + inset;
+
+  // the macros M464 and M465 start somewhere else than Fusion's start point
+  var start = {x:x, y:y};
+  if (probe.community) {
+    switch (cycleType) {
+    case "probing-xy-outer-corner": // above the part, inset from both walls
+      start = {x:cornerX + a1 * inset, y:cornerY + a2 * inset};
+      break;
+    case "probing-x-plane-angle": // first of the two points, the one with the smaller coordinate
+      start = {x:x, y:y - spacing / 2};
+      break;
+    case "probing-y-plane-angle":
+      start = {x:x - spacing / 2, y:y};
+      break;
+    }
+  }
+
+  // XY first, at the height the machine is at: after a tool change that is the clearance
+  // position, after a probing cycle its clearance height. Then down to the clearance height.
+  writeProbeBlock(90, gFormat.format(0), undefined, start);
+  if (!probeZUnknown) {
+    writeProbeBlock(90, gFormat.format(0), undefined, {z:probe.safeZ});
+  }
+
+  if (probe.community) {
+    switch (cycleType) {
+    case "probing-x":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M466", "X" + xyzFormat.format(a1 * reach)], {X:x + a1 * clearance});
+      break;
+    case "probing-y":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M466", "Y" + xyzFormat.format(a1 * reach)], {Y:y + a1 * clearance});
+      break;
+    case "probing-z":
+      if (probeZUnknown) {
+        probeMacro(["M466", "Z" + xyzFormat.format(-probeZSearchDistance)], {Z:probeZ});
+      } else {
+        probeProtectedMove({z:probeZ + cycle.probeClearance - probe.safeZ});
+        probeMacro(["M466", "Z" + xyzFormat.format(-reach)], {Z:probeZ});
+      }
+      probeZUnknown = false;
+      break;
+
+    // M461 starts at the centre at the probing height and touches outwards
+    case "probing-x-channel":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M461", "X" + xyzFormat.format(cycle.width1 / 2 + cycle.probeOvertravel)], {X:x}, {D:cycle.width1});
+      break;
+    case "probing-y-channel":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M461", "Y" + xyzFormat.format(cycle.width1 / 2 + cycle.probeOvertravel)], {Y:y}, {E:cycle.width1});
+      break;
+    case "probing-xy-circular-hole":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M461", "X" + xyzFormat.format(cycle.width1 / 2 + cycle.probeOvertravel),
+        "Y" + xyzFormat.format(cycle.width1 / 2 + cycle.probeOvertravel)], {X:x, Y:y}, {D:cycle.width1, E:cycle.width1});
+      break;
+    case "probing-xy-rectangular-hole":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M461", "X" + xyzFormat.format(cycle.width1 / 2 + cycle.probeOvertravel),
+        "Y" + xyzFormat.format(cycle.width2 / 2 + cycle.probeOvertravel)], {X:x, Y:y}, {D:cycle.width1, E:cycle.width2});
+      break;
+
+    // M462 starts above the centre, moves out by half the width plus J, which leaves the ball
+    // cycle.probeClearance from the wall, lowers by E + #150/2 and touches inwards
+    case "probing-x-wall":
+      probeLowerToRetract();
+      probeMacro(["M462", "X" + xyzFormat.format(cycle.width1),
+        "J[" + xyzFormat.format(cycle.probeClearance) + "+#150/2]", probeMacroDepth(probeZ)], {X:x}, {D:cycle.width1});
+      break;
+    case "probing-y-wall":
+      probeLowerToRetract();
+      probeMacro(["M462", "Y" + xyzFormat.format(cycle.width1),
+        "J[" + xyzFormat.format(cycle.probeClearance) + "+#150/2]", probeMacroDepth(probeZ)], {Y:y}, {E:cycle.width1});
+      break;
+    case "probing-xy-circular-boss":
+      probeLowerToRetract();
+      probeMacro(["M462", "X" + xyzFormat.format(cycle.width1), "Y" + xyzFormat.format(cycle.width1),
+        "J[" + xyzFormat.format(cycle.probeClearance) + "+#150/2]", probeMacroDepth(probeZ)], {X:x, Y:y}, {D:cycle.width1, E:cycle.width1});
+      break;
+    case "probing-xy-rectangular-boss":
+      probeLowerToRetract();
+      probeMacro(["M462", "X" + xyzFormat.format(cycle.width1), "Y" + xyzFormat.format(cycle.width2),
+        "J[" + xyzFormat.format(cycle.probeClearance) + "+#150/2]", probeMacroDepth(probeZ)], {X:x, Y:y}, {D:cycle.width1, E:cycle.width2});
+      break;
+
+    case "probing-xy-inner-corner": // M463 touches both walls from the current position
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      if (spacing) {
+        warning(localize("Probe spacing is not supported by M463 and is ignored."));
+      }
+      probeMacro(["M463", "X" + xyzFormat.format(a1 * reach), "Y" + xyzFormat.format(a2 * reach)], {X:cornerX, Y:cornerY});
+      break;
+    case "probing-xy-outer-corner": // M464 moves out by travel past each wall, lowers by E + #150/2 and touches back
+      probeLowerToRetract();
+      probeMacro(["M464", "X" + xyzFormat.format(a1 * travel), "Y" + xyzFormat.format(a2 * travel),
+        probeMacroDepth(probeZ)], {X:cornerX, Y:cornerY});
+      break;
+
+    // M465 touches at the start point, moves on by the spacing and touches again. #153 is the
+    // angle of the edge from the axis the points lie along, counterclockwise.
+    case "probing-x-plane-angle": // touches in X at two points along Y, nominal edge at 90 deg
+    case "probing-y-plane-angle": // touches in Y at two points along X, nominal edge at 0 deg
+      if (!spacing) {
+        error(localize("Angle probing needs a probe spacing."));
+        return;
+      }
+      var alongY = cycleType == "probing-x-plane-angle";
+      var nominalAngle = (cycle.nominalAngle != undefined) ? cycle.nominalAngle : (alongY ? 90 : 0);
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeMacro(["M465", (alongY ? "Y" : "X") + xyzFormat.format(spacing), "E" + xyzFormat.format(a1 * reach)],
+        {Q:alongY ? nominalAngle - 90 : nominalAngle});
+      break;
+
+    default:
+      error(subst(localize("Probing cycle '%1' is not supported. Supported: probing-x, probing-y, probing-z, x/y channel and wall, circular and rectangular hole and boss, inner and outer corner, x/y plane angle."), cycleType));
+      return;
+    }
+  } else {
+    switch (cycleType) {
+    case "probing-z":
+      if (probeZUnknown) {
+        probeTouch("z", -probeZSearchDistance);
+      } else {
+        probeProtectedMove({z:probeZ + cycle.probeClearance - probe.safeZ});
+        probeTouch("z", -reach);
+      }
+      probeSetWCS("z", probeZ);
+      probeZUnknown = false;
+      break;
+    case "probing-x":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeWall("x", x, a1);
+      break;
+    case "probing-y":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeWall("y", y, a1);
+      break;
+    case "probing-xy-inner-corner":
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      // optional spacing measures each wall away from the other one, clear of corner radii
+      if (spacing) {
+        probeProtectedMove({y:-a2 * spacing});
+      }
+      probeWall("x", x, a1);
+      writeProbeBlock(90, gFormat.format(1), probe.linkFeed, {y:y});
+      if (spacing) {
+        probeProtectedMove({x:-a1 * spacing});
+      }
+      probeWall("y", y, a2);
+      writeProbeBlock(90, gFormat.format(1), probe.linkFeed, {x:x});
+      break;
+    case "probing-xy-outer-corner": // start is diagonally outside the corner, travel past it along each wall
+      probeProtectedMove({z:probeZ - probe.safeZ});
+      probeProtectedMove({y:a2 * travel});
+      probeWall("x", x, a1);
+      writeProbeBlock(90, gFormat.format(1), probe.linkFeed, {y:y});
+      probeProtectedMove({x:a1 * travel});
+      probeWall("y", y, a2);
+      writeProbeBlock(90, gFormat.format(1), probe.linkFeed, {x:x});
+      break;
+    case "probing-x-plane-angle":
+    case "probing-y-plane-angle":
+      error(localize("Angle probing is not possible with the stock firmware."));
+      return;
+    default:
+      error(subst(localize("Probing cycle '%1' needs the community firmware. The stock firmware supports probing-x, probing-y, probing-z and the inner and outer corner."), cycleType));
+      return;
+    }
+  }
+
+  writeProbeBlock(90, gFormat.format(0), undefined, {z:probe.safeZ});
+}
+
+function onCycleEnd() {
+  if (!isProbingCycle() || !probe) {
+    return;
+  }
+  writeComment("end " + cycleType);
+  probe = undefined;
+  gMotionModal.reset();
+  forceAny();
+}
+// <<<<< WCS PROBING
+
 var pendingRadiusCompensation = -1;
 
 function onRadiusCompensation() {
@@ -1753,6 +2244,9 @@ function onRadiusCompensation() {
 }
 
 function onRapid(_x, _y, _z) {
+  if (isProbeOperation()) {
+    return; // probing cycles position the probe themselves in onCyclePoint
+  }
   var x = xOutput.format(_x);
   var y = yOutput.format(_y);
   var z = zOutput.format(_z);
@@ -1767,6 +2261,9 @@ function onRapid(_x, _y, _z) {
 }
 
 function onLinear(_x, _y, _z, feed) {
+  if (isProbeOperation()) {
+    return; // probing cycles position the probe themselves in onCyclePoint
+  }
   // at least one axis is required
   if (pendingRadiusCompensation >= 0) {
     // ensure that we end at desired position when compensation is turned off
