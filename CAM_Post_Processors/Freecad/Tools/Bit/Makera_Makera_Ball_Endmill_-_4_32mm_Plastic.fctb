@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Makera_Ball_Endmill_-_4_32mm_Plastic",
   "name": "Makera_Makera Ball Endmill - 4*32mm_Plastic",
   "shape": "ballend.fcstd",
   "shape-type": "Ballend",

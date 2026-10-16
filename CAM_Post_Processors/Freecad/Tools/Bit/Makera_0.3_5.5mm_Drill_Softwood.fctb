@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_0.3_5.5mm_Drill_Softwood",
   "name": "Makera_0.3*5.5mm Drill_Softwood",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",

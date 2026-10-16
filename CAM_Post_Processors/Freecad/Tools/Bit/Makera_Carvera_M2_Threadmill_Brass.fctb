@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Carvera_M2_Threadmill_Brass",
   "name": "Makera_Carvera M2 Threadmill_Brass",
   "shape": "thread-mill.fcstd",
   "shape-type": "ThreadMill",

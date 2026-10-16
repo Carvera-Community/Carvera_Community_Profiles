@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_0.8_10mm_Drill_Plastic",
   "name": "Makera_0.8*10mm Drill_Plastic",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",

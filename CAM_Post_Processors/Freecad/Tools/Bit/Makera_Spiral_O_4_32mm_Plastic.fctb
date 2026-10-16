@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_Spiral_O_4_32mm_Plastic",
   "name": "Makera_Spiral O 4*32mm_Plastic",
   "shape": "endmill.fcstd",
   "shape-type": "Endmill",

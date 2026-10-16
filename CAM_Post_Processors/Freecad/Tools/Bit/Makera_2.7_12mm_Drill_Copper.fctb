@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_2.7_12mm_Drill_Copper",
   "name": "Makera_2.7*12mm Drill_Copper",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",

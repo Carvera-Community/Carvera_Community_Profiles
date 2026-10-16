@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_1.4_12mm_Drill_Brass",
   "name": "Makera_1.4*12mm Drill_Brass",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",

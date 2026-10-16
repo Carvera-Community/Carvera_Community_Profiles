@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_1_10mm_Drill_Hardwood",
   "name": "Makera_1*10mm Drill_Hardwood",
   "shape": "drill.fcstd",
   "shape-type": "Endmill",

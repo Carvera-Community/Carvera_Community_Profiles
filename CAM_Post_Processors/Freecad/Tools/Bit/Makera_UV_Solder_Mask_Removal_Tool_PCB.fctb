@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "id": "Makera_UV_Solder_Mask_Removal_Tool_PCB",
   "name": "Makera_UV Solder Mask Removal Tool_PCB",
   "shape": "v-bit.fcstd",
   "shape-type": "VBit",
