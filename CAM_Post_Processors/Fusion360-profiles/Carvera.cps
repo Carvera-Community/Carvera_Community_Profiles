@@ -226,7 +226,7 @@ properties = {
   },
   issueColletChangeOnShankSizeChange: {
     title      : "Community Firmware Collet Changes",
-    description: "Community Firmware: Add info about the collet to use to tool change commands. (e.g. M6 T1 S1, where \"S1\" is the collet change parameter)",
+    description: "Community Firmware: Add info about the collet to use to tool change commands. (e.g. M6 T1 K1, where \"K1\" is the collet change parameter)",
     group      : "1. Preferences",
     type       : "boolean",
     value      : false,
@@ -328,7 +328,7 @@ function formatComment(text) {
   return "(" + String(text).replace(/[()]/g, "") + ")";
 }
 
-/** Standard collet diameters in mm (order: 6.35 before 6 to match correctly). Map to S1-S5; do not change S numbering. */
+/** Standard collet diameters in mm (order: 6.35 before 6 to match correctly). Map to K1-K6; do not change the K numbering. */
 var STANDARD_SHAFT_DIAMETERS_MM = [3, 3.175, 4, 6.35, 6, 8];
 var STANDARD_SHAFT_TOLERANCE_MM = 0.01;
 
@@ -374,20 +374,20 @@ function getShaftDiameter(tool) {
 }
 
 /**
-  Returns S1-S5 parameter for tool change when shank diameter changed.
-  DO NOT CHANGE THIS NUMBERING: S1=3.175mm, S2=4mm, S3=6mm, S4=6.35mm, S5=8mm.
+  Returns the K1-K6 collet parameter for tool change when shank diameter changed.
+  DO NOT CHANGE THIS NUMBERING, it matches the firmware: K1=3mm, K2=3.175mm, K3=4mm, K4=6mm, K5=6.35mm, K6=8mm.
   diameterMm in mm. Returns "" if no match.
 */
 function getShankSizeSuffix(diameterMm) {
   var d = Number(diameterMm);
   if (isNaN(d)) return "";
   var tol = STANDARD_SHAFT_TOLERANCE_MM;
-  if (Math.abs(d - 3) <= tol) return "S1";
-  if (Math.abs(d - 3.175) <= tol) return "S2";
-  if (Math.abs(d - 4) <= tol) return "S3";
-  if (Math.abs(d - 6.35) <= tol) return "S5";
-  if (Math.abs(d - 6) <= tol) return "S4";
-  if (Math.abs(d - 8) <= tol) return "S6";
+  if (Math.abs(d - 3) <= tol) return "K1";
+  if (Math.abs(d - 3.175) <= tol) return "K2";
+  if (Math.abs(d - 4) <= tol) return "K3";
+  if (Math.abs(d - 6.35) <= tol) return "K5";
+  if (Math.abs(d - 6) <= tol) return "K4";
+  if (Math.abs(d - 8) <= tol) return "K6";
   return "";
 }
 
@@ -1462,7 +1462,7 @@ function onSection() {
 
     setCoolant(COOLANT_OFF);
 
-    // Shank diameter change: add S1-S5 to M6 when shaft diameter changed (S1=3.175mm, S2=4mm, S3=6mm, S4=6.35mm, S5=8mm; do not change numbering)
+    // Shank diameter change: add the collet K1-K6 to M6 when shaft diameter changed (K1=3mm, K2=3.175mm, K3=4mm, K4=6mm, K5=6.35mm, K6=8mm; do not change numbering)
     // Use shaft segments (Tool tab) to match standard diameter; fallback to tool.shaftDiameter
     var shaftDiameterMm = getToolShaftDiameterMm(tool);
     var prevShaftMm = !isFirstSection() ? getToolShaftDiameterMm(getPreviousSection().getTool()) : 0;
