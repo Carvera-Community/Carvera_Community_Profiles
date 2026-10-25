@@ -190,8 +190,8 @@ properties = {
     value: false,
     scope: "post"
   },
-    manualToolChangeBehavior: {
-    title      : "Manual Tool Change Behavior",
+    machineType: {
+    title      : "Machine Type",
     description: "If you are using community firmware, select the community firmware option. If you are using a stock machine, choose the relavent option. The Stock C1 with manual tool changes will add code to do manual tool changes on tool numbers greater than 6 or the tool is marked for manual change, with the option to set up manual tool changes when the shank size changes. The community firmware does this automatically",
     group      : "1. Preferences",
     type       : "enum",
@@ -606,6 +606,96 @@ function appendToolField(comment, key, value, format, allowZero) {
 
   See https://cam.autodesk.com/posts/reference/classTool.html
 */
+/**
+  Sanitize values written into Makera Studio ;@MKR metadata.
+  The pipe character is the field delimiter, so it must not appear in values.
+*/
+function sanitizeMkrField(value) {
+  if (value === undefined || value === null) {
+    return "";
+  }
+  return String(value)
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\|/g, "/")
+    .replace(/;/g, ",");
+}
+
+function getMkrToolName(tool) {
+  var name = sanitizeMkrField(tool.description);
+  return name ? name : ("Tool " + toolFormat.format(tool.number));
+}
+
+/**
+  Write Makera Studio metadata so the controller can associate T numbers with
+  Fusion tool descriptions.  This follows the ;@MKR schema used by Makera
+  Studio generated files, while intentionally avoiding stock/material/origin
+  metadata that Fusion may not be able to reproduce exactly.
+*/
+function writeMakeraMetadata() {
+  writeln(";@MKR|BEGIN");
+  writeln(";@MKR|SCHEMA|v=1.0.0");
+  writeln(";@MKR|MACHINE|id=Z1|name=Makera Z1");
+  writeln(";@MKR|CAM|id=Fusion360|name=Autodesk Fusion 360");
+  writeln(";@MKR|UNIT|value=" + (unit == MM ? "MM" : "IN"));
+
+  var tools = getToolTable();
+  for (var i = 0; i < tools.getNumberOfTools(); ++i) {
+    var mkrTool = tools.getTool(i);
+    var line = ";@MKR|TOOL|number=" + toolFormat.format(mkrTool.number);
+
+    if (mkrTool.productId) {
+      line += "|id=" + sanitizeMkrField(mkrTool.productId);
+    }
+
+    line += "|name=" + getMkrToolName(mkrTool);
+    line += "|type=" + sanitizeMkrField(getToolTypeName(mkrTool.type));
+
+    var shaft = getShaftDiameter(mkrTool);
+    if (typeof shaft == "number" && !isNaN(shaft) && shaft > 0) {
+      line += "|handlediameter=" + xyzFormat.format(shaft);
+    }
+    if (typeof mkrTool.shoulderLength == "number" && mkrTool.shoulderLength > 0) {
+      line += "|shoulderlength=" + xyzFormat.format(mkrTool.shoulderLength);
+    }
+    if (typeof mkrTool.fluteLength == "number" && mkrTool.fluteLength > 0) {
+      line += "|flutelength=" + xyzFormat.format(mkrTool.fluteLength);
+    }
+    if (typeof mkrTool.diameter == "number" && mkrTool.diameter > 0) {
+      line += "|diameter=" + xyzFormat.format(mkrTool.diameter);
+    }
+    if (typeof mkrTool.tipDiameter == "number" && !isNaN(mkrTool.tipDiameter) && mkrTool.tipDiameter >= 0) {
+      line += "|tipdiameter=" + xyzFormat.format(mkrTool.tipDiameter);
+    }
+    if (typeof mkrTool.cornerRadius == "number" && !isNaN(mkrTool.cornerRadius) && mkrTool.cornerRadius >= 0) {
+      line += "|cornerradius=" + xyzFormat.format(mkrTool.cornerRadius);
+    }
+    if (typeof mkrTool.taperAngle == "number" && mkrTool.taperAngle > 0 && mkrTool.taperAngle < Math.PI) {
+      line += "|angle=" + taperFormat.format(mkrTool.taperAngle);
+    }
+
+    writeln(line);
+  }
+
+  // Include toolpath-to-tool associations, matching Makera Studio's own header style.
+  for (var s = 0; s < getNumberOfSections(); ++s) {
+    var mkrSection = getSection(s);
+    var mkrSectionTool = mkrSection.getTool();
+    var operationName = mkrSection.getParameter("operation-comment", "");
+    if (!operationName) {
+      operationName = "Operation " + (s + 1);
+    }
+    writeln(
+      ";@MKR|TOOLPATH|number=" + (s + 1) +
+      "|tool_number=" + toolFormat.format(mkrSectionTool.number) +
+      "|name=[T" + toolFormat.format(mkrSectionTool.number) + "]" + sanitizeMkrField(operationName)
+    );
+  }
+
+  writeln(";@MKR|END");
+  writeln("");
+}
+
+
 function dumpToolInformation() {
   var zRanges = {};
   if (is3D()) {
@@ -955,6 +1045,10 @@ function onOpen(section) {
     setWordSeparator("");
   }
 
+  if (getProperty("writeTools") && getProperty("machineType") != "carvcomMtc") {
+    writeMakeraMetadata();
+  }
+
   if (programName) {
     writeComment(programName);
   }
@@ -983,7 +1077,7 @@ function onOpen(section) {
   var currentSection = getSection(0);
 
   // dump tool information
-  if (getProperty("writeTools")) {
+  if (getProperty("writeTools") && getProperty("machineType") == "carvcomMtc") {
     dumpToolInformation();
   }
 
@@ -1423,6 +1517,10 @@ function onSection() {
 
     redirectToFile(path);
 
+    if (getProperty("writeTools") && getProperty("machineType") != "carvcomMtc") {
+      writeMakeraMetadata();
+    } 
+
     if (programName) {
       writeComment(programName);
     }
@@ -1452,16 +1550,22 @@ function onSection() {
   }
 
   if (insertToolCall) {
-
-    if(getProperty("splitFile") == "toolpath" && getProperty("splitFileHeader")) {
-      dumpToolInformation();
-      if (getProperty("writeStock")) {
-        dumpStockInformation();
+    if (getProperty("machineType") != "carvcomMtc") {
+      if(getProperty("splitFile") == "toolpath" && getProperty("splitFileHeader")) {
+        dumpToolInformation();
+        if (getProperty("writeStock")) {
+          dumpStockInformation();
+        }
+      }
+      else{
+        // Custom: Makera Studio style tool marker, e.g. "; T1-3.175mm Flat End".
+        writeln("; T" + toolFormat.format(tool.number) + "-" + getMkrToolName(tool));
+        writeln("");
       }
     }
+    
 
     setCoolant(COOLANT_OFF);
-
     // Shank diameter change: add S1-S5 to M6 when shaft diameter changed (S1=3.175mm, S2=4mm, S3=6mm, S4=6.35mm, S5=8mm; do not change numbering)
     // Use shaft segments (Tool tab) to match standard diameter; fallback to tool.shaftDiameter
     var shaftDiameterMm = getToolShaftDiameterMm(tool);
@@ -1488,8 +1592,10 @@ function onSection() {
     }
 
     var tloValue = parseTLO(tool.comment);//A is automatic and is the default, M is manual setting (C=0), a number set the value directly (H=-14)
+    // Custom: append Fusion tool description to tool-change lines so the tool name is visible with M6.
+    var toolNameComment = tool.description ? " " + formatComment(tool.description) : "";
 
-    var e_manualToolChangeBehavior = getProperty("manualToolChangeBehavior");
+    var e_manualToolChangeBehavior = getProperty("machineType");
 
     if(tool.number > 6 && e_manualToolChangeBehavior == "error6") {
       error(localize("Carvera does not support tool numbers greater than 6 by default. Use one of the manual tool change post processor settings"));
@@ -1504,7 +1610,7 @@ function onSection() {
         toolChangeParameters = toolChangeParameters + " " + shaftParam;
       }
 
-      writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " " + toolChangeParameters);
+      writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " " + toolChangeParameters + toolNameComment);
 
       if (tool.comment && !getProperty("useToolCommentForChangeParameters")) {
         writeComment(tool.comment);
@@ -1513,16 +1619,16 @@ function onSection() {
 
       if (tloValue && !getProperty("useToolCommentForChangeParameters")) {
         if (tloValue === "A") {
-            writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " C1");
+            writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " C1" + toolNameComment);
         } else if (tloValue === "M") {
-          writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " C0");  
+          writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " C0" + toolNameComment);   
         } else {
             var tloFloat = parseFloat(tloValue);
             if (!isNaN(tloFloat)) {
-                writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " H" + tloFloat);
-                writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " H" + tloFloat);
+                writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " H" + tloFloat + toolNameComment);
+                writeToolBlock(mFormat.format(6), "T" + toolFormat.format(tool.number) + " H" + tloFloat, toolNameComment);
             } else {
-                writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6));
+                writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + toolNameComment);
             }
         }
       } else {
@@ -1533,7 +1639,7 @@ function onSection() {
         if (getProperty("issueColletChangeOnShankSizeChange")){
           toolChangeParameters = toolChangeParameters + " " + shaftParam;
         }
-        writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " " + toolChangeParameters);
+        writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + " " + toolChangeParameters + toolNameComment);
       }
     }else if (tool.number > 6 || tool.manualToolChange) {
       writeComment("Manual Tool Change To #" + toolFormat.format(tool.number));
@@ -1556,7 +1662,7 @@ function onSection() {
           writeBlock("M493.2 T-1");
 
         }
-        writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6));
+        writeBlock("T" + toolFormat.format(tool.number) +  mFormat.format(6) + toolNameComment);
 
         if (tool.comment) {
           writeComment(tool.comment);
