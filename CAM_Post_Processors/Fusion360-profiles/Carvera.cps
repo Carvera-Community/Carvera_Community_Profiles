@@ -74,7 +74,7 @@ minimumCircularSweep = toRad(0.01);
 maximumCircularSweep = toRad(180);
 
 allowHelicalMoves = true;
-allowedCircularPlanes = undefined; // allow any circular motion
+allowedCircularPlanes = (1 << PLANE_XY); // only output circular moves in XY; linearize XZ/YZ arcs to avoid malformed circles
 highFeedrate = (unit == MM ? 3000 : 140);
 
 // user-defined properties
