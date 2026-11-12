@@ -221,19 +221,23 @@ class Makera_26_Mch(PostProcessor):
         self._last_spindle_speed: Optional[float] = None
 
     # ------------------------------------------------------------------
-    # Tool table dump
+    # Tools/stock/origin dump
     # ------------------------------------------------------------------
     #
-    # Emits a "(@FC|TOOL|number=...|name=...|diameter=...|...)" comment for
-    # every tool used by the job, in the header. This is consumed by
-    # downstream shop-floor tooling to know which tools a program needs
-    # before it's run.
-    
-    
+    # This is consumed by downstream shop-floor tooling to know which
+    # settings apply to a program before it's run.
+    #
+    # Emits:
+    # - a "(@FC|TOOL|number=...|name=...|diameter=...|...)" comment for
+    #   every tool used by the job, in the header.
+    # - one "(@FC|STOCK|...)" comment that describes the stock size and shape
+    # - one "(@FC|ORIGIN|...)" comment that describes the WCS origin placement
+
+
     def _build_header(self, postables):
         gcodeheader = super()._build_header(postables)
-        gcodeheader.Path.Commands.append('test')
 
+        self.tool_controllers = []
         if self.values["OUTPUT_HEADER"] and self.values.get("LIST_TOOLS_IN_HEADER", True):
             self.tool_controllers = self._collect_tool_controllers(postables)
 
@@ -425,6 +429,207 @@ class Makera_26_Mch(PostProcessor):
 
         return "(" + "|".join(parts) + ")"
 
+    # ------------------------------------------------------------------
+    # Stock / origin dump
+    # ------------------------------------------------------------------
+    #
+    # Machine-readable stock / origin header records.
+    #
+    # Examples:
+    # (@FC|STOCK|id=box|width=150|depth=100|height=10)
+    # (@FC|STOCK|id=cylinder|width=70|depth=70|height=50|diameter=70)
+    # (@FC|ORIGIN|type_name=topFrontLeft|x=-75|y=-50|z=5)
+    #
+    # STOCK:
+    #   - id: FreeCAD stock type mapped to box or cylinder
+    #   - width/depth/height: WCS X/Y/Z extents
+    #   - diameter: outer diameter for cylinder (from Radius, else inferred)
+    #   - omitted when stock is missing or not a box/cylinder (e.g. unknown solid)
+    #
+    # ORIGIN:
+    #   - type_name: stock-box point (27 points) when the origin sits on that
+    #     grid (or "custom"), ex: topFrontLeft, bottomBackRight
+    #   - x/y/z: WCS origin relative to the stock center
+
+    @staticmethod
+    def _stock_type_name(stock):
+        """Return FreeCAD's StockType string, with property-based fallbacks."""
+        if stock is None:
+            return ""
+
+        stock_type = getattr(stock, "StockType", None)
+        if stock_type:
+            return str(stock_type)
+
+        if hasattr(stock, "Length") and hasattr(stock, "Width") and hasattr(stock, "Height"):
+            return "CreateBox"
+        if hasattr(stock, "Radius") and hasattr(stock, "Height"):
+            return "CreateCylinder"
+        if hasattr(stock, "ExtXneg") and hasattr(stock, "ExtZpos"):
+            return "FromBase"
+        return ""
+
+    @staticmethod
+    def _stock_id_from_type(stock_type):
+        """Map FreeCAD stock types onto the Fusion-compatible box/cylinder ids."""
+        if stock_type in ("CreateBox", "FromBase"):
+            return "box"
+        if stock_type == "CreateCylinder":
+            return "cylinder"
+        return None
+
+    def _stock_bound_box(self, stock):
+        """Return the stock Shape BoundBox when it has positive X/Y/Z extents."""
+        shape = getattr(stock, "Shape", None)
+        if shape is None:
+            return None
+
+        box = getattr(shape, "BoundBox", None)
+        if box is None:
+            return None
+
+        try:
+            if hasattr(box, "isValid") and not box.isValid():
+                return None
+        except Exception:
+            return None
+
+        try:
+            dx = float(box.XLength)
+            dy = float(box.YLength)
+            dz = float(box.ZLength)
+        except Exception:
+            return None
+
+        if dx != dx or dy != dy or dz != dz:
+            return None
+        if not (dx > 0 and dy > 0 and dz > 0):
+            return None
+        return box
+
+    @staticmethod
+    def _infer_radial_diameter(width, depth, height):
+        xy = abs(width - depth)
+        xz = abs(width - height)
+        yz = abs(depth - height)
+        if xy <= xz and xy <= yz:
+            return (width + depth) / 2
+        if xz <= yz:
+            return (width + height) / 2
+        return (depth + height) / 2
+
+    def _stock_diameter(self, stock, width, depth, height):
+        radius = self._quantity_value(getattr(stock, "Radius", None))
+        if radius is not None and radius > 0:
+            return radius * 2
+        return self._infer_radial_diameter(width, depth, height)
+
+    @staticmethod
+    def _classify_origin_side(origin_from_center, half_size, tolerance):
+        if not (half_size > 0):
+            return 0 if abs(origin_from_center) <= tolerance else None
+
+        sides = (-1, 0, 1)
+        positions = (-half_size, 0.0, half_size)
+        best_side = 0
+        best_dist = abs(origin_from_center - positions[1])
+        for side, position in zip(sides, positions):
+            dist = abs(origin_from_center - position)
+            if dist < best_dist:
+                best_dist = dist
+                best_side = side
+        return best_side if best_dist <= tolerance else None
+
+    @staticmethod
+    def _origin_type_name(x_side, y_side, z_side):
+        if x_side is None or y_side is None or z_side is None:
+            return "custom"
+
+        parts = []
+        if z_side < 0:
+            parts.append("bottom")
+        elif z_side > 0:
+            parts.append("top")
+        if y_side < 0:
+            parts.append("front")
+        elif y_side > 0:
+            parts.append("back")
+        if x_side < 0:
+            parts.append("left")
+        elif x_side > 0:
+            parts.append("right")
+
+        if not parts:
+            return "center"
+
+        name = parts[0]
+        for part in parts[1:]:
+            name += part[0].upper() + part[1:]
+        if len(parts) == 1:
+            name += "Center"
+        return name
+
+    def _format_stock_header_lines(self):
+        """Build (@FC|STOCK|...) and (@FC|ORIGIN|...) comments, or an empty list."""
+        stock = getattr(self._job, "Stock", None) if self._job is not None else None
+        stock_id = self._stock_id_from_type(self._stock_type_name(stock))
+        if not stock_id:
+            return []
+
+        box = self._stock_bound_box(stock)
+        if box is None:
+            return []
+
+        width = self._quantity_value(Units.Quantity(float(box.XLength), "mm"))
+        depth = self._quantity_value(Units.Quantity(float(box.YLength), "mm"))
+        height = self._quantity_value(Units.Quantity(float(box.ZLength), "mm"))
+        origin_x = self._quantity_value(
+            Units.Quantity(-((float(box.XMin) + float(box.XMax)) / 2), "mm")
+        )
+        origin_y = self._quantity_value(
+            Units.Quantity(-((float(box.YMin) + float(box.YMax)) / 2), "mm")
+        )
+        origin_z = self._quantity_value(
+            Units.Quantity(-((float(box.ZMin) + float(box.ZMax)) / 2), "mm")
+        )
+        if None in (width, depth, height, origin_x, origin_y, origin_z):
+            return []
+
+        precision = self.values["AXIS_PRECISION"]
+        stock_parts = ["@FC|STOCK"]
+        self._append_fc_field(stock_parts, "id", stock_id)
+        self._append_fc_field(stock_parts, "width", width, precision)
+        self._append_fc_field(stock_parts, "depth", depth, precision)
+        self._append_fc_field(stock_parts, "height", height, precision)
+        if stock_id == "cylinder":
+            self._append_fc_field(
+                stock_parts, "diameter", self._stock_diameter(stock, width, depth, height), precision
+            )
+
+        half_x = width / 2
+        half_y = depth / 2
+        half_z = height / 2
+        tol_floor = self._quantity_value(Units.Quantity(0.05, "mm"))
+        if tol_floor is None:
+            tol_floor = 0.05
+        tol = max(tol_floor, 0.002 * max(width, depth, height))
+        type_name = self._origin_type_name(
+            self._classify_origin_side(origin_x, half_x, tol),
+            self._classify_origin_side(origin_y, half_y, tol),
+            self._classify_origin_side(origin_z, half_z, tol),
+        )
+
+        origin_parts = ["@FC|ORIGIN"]
+        self._append_fc_field(origin_parts, "type_name", type_name)
+        self._append_fc_field(origin_parts, "x", origin_x, precision)
+        self._append_fc_field(origin_parts, "y", origin_y, precision)
+        self._append_fc_field(origin_parts, "z", origin_z, precision)
+
+        return [
+            "(" + "|".join(stock_parts) + ")",
+            "(" + "|".join(origin_parts) + ")",
+        ]
+
     def _expand_prefix(self, postables):
         """Add prefix to each section"""
 
@@ -445,12 +650,18 @@ class Makera_26_Mch(PostProcessor):
         if commands := gcodeheader.Path.Commands:
             prefix.append(self._make_postable("Post: header", commands))
         
-        controllers = self.tool_controllers
+        controllers = getattr(self, "tool_controllers", None) or []
         for tool_controller in controllers:
             try:
                 prefix.append(self._make_postable("", self._format_tool_table_line(tool_controller) + "\n"))
             except Exception as exc:
                 FreeCAD.Console.PrintWarning("Failed to dump tool T%s: %s\n" % (getattr(tool_controller, "ToolNumber", "?"), exc))
+
+        try:
+            for line in self._format_stock_header_lines():
+                prefix.append(self._make_postable("", line + "\n"))
+        except Exception as exc:
+            FreeCAD.Console.PrintWarning("Failed to dump stock/origin: %s\n" % exc)
         
         
         # optimization can start now

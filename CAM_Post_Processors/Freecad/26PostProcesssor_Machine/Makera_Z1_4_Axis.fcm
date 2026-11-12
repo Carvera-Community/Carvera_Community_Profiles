@@ -1,0 +1,208 @@
+{
+    "freecad_version": "27.1.0",
+    "machine": {
+        "axes": {
+            "A": {
+                "allow_flip": true,
+                "joint": [
+                    [
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        1.0,
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "limits": {
+                    "max": 10000000.0,
+                    "min": -10000000.0
+                },
+                "max_velocity": 4000.0,
+                "parent": "Y",
+                "role": "table_rotary",
+                "sequence": 0,
+                "solution_preference": "shortest",
+                "type": "rotary",
+                "wrap_strategy": "unwound"
+            },
+            "X": {
+                "joint": [
+                    [
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        1.0,
+                        0.0,
+                        0.0
+                    ]
+                ],
+                "limits": {
+                    "max": 200.0,
+                    "min": 0
+                },
+                "max_velocity": 4000.0,
+                "parent": null,
+                "role": "head_linear",
+                "sequence": 0,
+                "type": "linear"
+            },
+            "Y": {
+                "joint": [
+                    [
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                ],
+                "limits": {
+                    "max": 200.0,
+                    "min": 0
+                },
+                "max_velocity": 4000.0,
+                "parent": null,
+                "role": "table_linear",
+                "sequence": 0,
+                "type": "linear"
+            },
+            "Z": {
+                "joint": [
+                    [
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                ],
+                "limits": {
+                    "max": 100.0,
+                    "min": 0
+                },
+                "max_velocity": 4000.0,
+                "parent": "X",
+                "role": "head_linear",
+                "sequence": 0,
+                "type": "linear"
+            }
+        },
+        "description": "",
+        "kinematics": {
+            "base_frame": {
+                "orientation_quaternion": [
+                    0,
+                    0,
+                    0,
+                    1
+                ],
+                "origin": [
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "dwo_supported": false,
+            "notes": "",
+            "rotation_strategy": "none",
+            "tcp_supported": false
+        },
+        "manufacturer": "Makera",
+        "name": "Makera Z1 4 Axis",
+        "toolheads": [
+            {
+                "coolant_delay": 0.0,
+                "coolant_flood": false,
+                "coolant_mist": true,
+                "id": "spindle",
+                "max_power_kw": 0.15,
+                "max_rpm": 13000,
+                "min_rpm": 2000,
+                "name": "Spindle",
+                "tool_change": "manual",
+                "toolhead_type": "rotary",
+                "toolhead_wait": 0.0
+            },
+            {
+                "coolant_delay": 0.0,
+                "coolant_flood": false,
+                "coolant_mist": false,
+                "id": "laser",
+                "laser_wavelength": 445.0,
+                "max_power_kw": 0.05,
+                "max_rpm": 24000,
+                "min_rpm": 6000,
+                "name": "Laser",
+                "tool_change": "manual",
+                "toolhead_type": "laser",
+                "toolhead_wait": 0.0
+            }
+        ],
+        "units": "metric"
+    },
+    "output": {
+        "comments": {
+            "enabled": true,
+            "include_blank_lines": true,
+            "include_operation_labels": false,
+            "output_bcnc_comments": false,
+            "symbol": "("
+        },
+        "duplicates": {
+            "commands": true,
+            "parameters": true
+        },
+        "formatting": {
+            "command_space": " ",
+            "end_of_line_chars": "\n",
+            "line_increment": 10,
+            "line_number_prefix": "N",
+            "line_number_start": 100,
+            "line_numbers": false
+        },
+        "header": {
+            "include_date": true,
+            "include_description": true,
+            "include_document_name": true,
+            "include_fixture_list": true,
+            "include_machine_name": true,
+            "include_project_file": true,
+            "include_tool_list": true,
+            "include_units": true,
+            "output_header": true
+        },
+        "output_tool_length_offset": true,
+        "precision": {
+            "axis": 3,
+            "feed": 3,
+            "spindle": 0
+        },
+        "remote_post": false,
+        "units": "metric"
+    },
+    "postprocessor": {
+        "file_name": "",
+        "properties": {}
+    },
+    "processing": {
+        "early_tool_prep": false,
+        "filter_inefficient_moves": false,
+        "split_arcs": false,
+        "tool_change": true,
+        "translate_drill_cycles": false,
+        "translate_rapid_moves": false,
+        "xy_before_z_after_tool_change": false
+    },
+    "version": 1
+}
