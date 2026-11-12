@@ -1,33 +1,7 @@
 {
-    "freecad_version": "26.3.0",
+    "freecad_version": "27.1.0",
     "machine": {
         "axes": {
-            "A": {
-                "allow_flip": true,
-                "joint": [
-                    [
-                        0,
-                        0,
-                        0
-                    ],
-                    [
-                        1.0,
-                        0.0,
-                        0.0
-                    ]
-                ],
-                "limits": {
-                    "max": 10000000.0,
-                    "min": -10000000.0
-                },
-                "max_velocity": 4000.0,
-                "parent": "Y",
-                "role": "table_rotary",
-                "sequence": 0,
-                "solution_preference": "shortest",
-                "type": "rotary",
-                "wrap_strategy": "unwound"
-            },
             "X": {
                 "joint": [
                     [
@@ -45,7 +19,7 @@
                     "max": 300.0,
                     "min": 0
                 },
-                "max_velocity": 6000.0,
+                "max_velocity": 4000.0,
                 "parent": null,
                 "role": "head_linear",
                 "sequence": 0,
@@ -68,7 +42,7 @@
                     "max": 200.0,
                     "min": 0
                 },
-                "max_velocity": 6000.0,
+                "max_velocity": 4000.0,
                 "parent": null,
                 "role": "table_linear",
                 "sequence": 0,
@@ -91,7 +65,7 @@
                     "max": 130.0,
                     "min": 0
                 },
-                "max_velocity": 6000.0,
+                "max_velocity": 4000.0,
                 "parent": "X",
                 "role": "head_linear",
                 "sequence": 0,
@@ -115,18 +89,47 @@
             },
             "dwo_supported": false,
             "notes": "",
+            "rotation_strategy": "none",
             "tcp_supported": false
         },
         "manufacturer": "Makera",
         "name": "Makera Air",
-        "toolheads": [],
+        "toolheads": [
+            {
+                "coolant_delay": 0.0,
+                "coolant_flood": false,
+                "coolant_mist": true,
+                "id": "spindle",
+                "max_power_kw": 0.2,
+                "max_rpm": 13000,
+                "min_rpm": 2000,
+                "name": "Spindle",
+                "tool_change": "manual",
+                "toolhead_type": "rotary",
+                "toolhead_wait": 0.0
+            },
+            {
+                "coolant_delay": 0.0,
+                "coolant_flood": false,
+                "coolant_mist": false,
+                "id": "laser",
+                "laser_wavelength": 445.0,
+                "max_power_kw": 0.05,
+                "max_rpm": 24000,
+                "min_rpm": 6000,
+                "name": "Laser",
+                "tool_change": "manual",
+                "toolhead_type": "laser",
+                "toolhead_wait": 0.0
+            }
+        ],
         "units": "metric"
     },
     "output": {
         "comments": {
             "enabled": true,
             "include_blank_lines": true,
-            "include_operation_labels": true,
+            "include_operation_labels": false,
             "output_bcnc_comments": false,
             "symbol": "("
         },
@@ -153,20 +156,20 @@
             "include_units": true,
             "output_header": true
         },
-        "output_tool_length_offset": false,
+        "output_tool_length_offset": true,
         "precision": {
             "axis": 3,
-            "feed": 1,
-            "spindle": 1
+            "feed": 3,
+            "spindle": 0
         },
         "remote_post": false,
         "units": "metric"
     },
     "postprocessor": {
-        "file_name": "makera_26_MCH",
+        "file_name": "makera",
         "properties": {
-            "axis_precision": 3,
-            "feed_precision": 2
+            "makera_machine_id": "CA1",
+            "makera_machine_name": "Carvera Air"
         }
     },
     "processing": {
@@ -174,9 +177,9 @@
         "filter_inefficient_moves": false,
         "split_arcs": false,
         "tool_change": true,
-        "translate_drill_cycles": true,
+        "translate_drill_cycles": false,
         "translate_rapid_moves": false,
-        "xy_before_z_after_tool_change": true
+        "xy_before_z_after_tool_change": false
     },
     "version": 1
 }
